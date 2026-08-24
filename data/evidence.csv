@@ -1,0 +1,9 @@
+evidence_id,ingredient_or_compound,clinical_strength,num_clinical_trials,consensus_summary,tier
+EVI_01,Salicylic Acid,Gold Standard,48,"Gold standard lipid-soluble BHA with proven efficacy in penetrating sebaceous follicles to reduce comedones and acne lesions.",Tier_1
+EVI_02,Niacinamide,Gold Standard,62,"Proven in double-blind placebo-controlled clinical trials to improve epidermal barrier function, reduce sebum production, and inhibit melanosome transfer.",Tier_1
+EVI_03,Ceramides,Gold Standard,75,"Essential physiological intercellular lipids required for stratum corneum barrier integrity and trans-epidermal water loss (TEWL) reduction.",Tier_1
+EVI_04,Hyaluronic Acid,Gold Standard,55,"High water-binding capacity humectant improving skin viscoelasticity and surface hydration.",Tier_1
+EVI_05,Azelaic Acid,Gold Standard,39,"Clinically proven dicarboxylic acid inhibiting tyrosinase and reducing Propionibacterium acnes colonization with anti-inflammatory efficacy in rosacea.",Tier_1
+EVI_06,Centella Asiatica,Strong,32,"Triterpenoid saponins (asiaticoside, madecassoside) stimulate collagen synthesis and downregulate pro-inflammatory cytokines in sensitized skin.",Tier_1
+EVI_07,Retinoids,Gold Standard,90,"Gold standard anti-aging and cellular turnover agents proven to upregulate collagen production and accelerate epidermal regeneration.",Tier_1
+EVI_08,Broad Spectrum Sunscreens,Gold Standard,120,"Essential preventative measure against UVA/UVB photoaging, DNA mutations, and hyperpigmentation.",Tier_1
