@@ -1,0 +1,9 @@
+test_id,persona_name,skin_type,concerns,sensitivity,budget,fragrance_free,vegan,cruelty_free,existing_products,excluded_ingredients,expected_status
+tc_01,Budget Student with Acne,oily,"acne,oiliness",medium,1200,true,false,false,"","",success
+tc_02,Sensitive Skin Barrier Repair,sensitive,"redness,barrier_repair,dryness",high,1800,true,true,true,"","",success
+tc_03,Anti-Aging Mature Complex,dry,"anti_aging,dryness,fine_lines",low,2500,false,false,false,"","",success
+tc_04,Pigmentation & Melasma Focus,combination,"hyperpigmentation,dullness",medium,1600,true,true,true,"","",success
+tc_05,Impossible Budget Shortfall,oily,"acne,enlarged_pores",low,200,false,false,false,"","",constraint_violation
+tc_06,Minimalist with Existing Cleanser,normal,"dullness,sun_protection",medium,1400,true,false,false,"Cleanser","",success
+tc_07,Exclusion Stress Test (No Niacinamide),oily,"acne,oiliness",high,1700,true,false,false,"","Niacinamide",success
+tc_08,Vegan Eco Enthusiast,dry,"dryness,dehydration",medium,2000,true,true,true,"","",success
