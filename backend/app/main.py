@@ -45,10 +45,7 @@ def parse_problem_endpoint(req: ProblemParseRequest):
 
 @app.post("/api/v1/recommendations", response_model=RecommendationResponse)
 def get_recommendations_endpoint(profile: UserProfileRequest):
-    try:
-        return RecommendationService.get_recommendations(profile)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return RecommendationService.get_recommendations(profile)
 
 @app.get("/api/v1/products")
 def list_products():

@@ -29,10 +29,14 @@ class DataLoader:
             self.products_df = pd.read_csv(products_path)
             self.products_df['price'] = pd.to_numeric(self.products_df['price'], errors='coerce').fillna(0.0)
             self.products_df['rating'] = pd.to_numeric(self.products_df['rating'], errors='coerce').fillna(4.0)
-            self.products_df['evidence_score'] = pd.to_numeric(self.products_df['evidence_score'], errors='coerce').fillna(0.8)
-            self.products_df['fragrance_free'] = self.products_df['fragrance_free'].astype(bool)
-            self.products_df['vegan'] = self.products_df['vegan'].astype(bool)
-            self.products_df['cruelty_free'] = self.products_df['cruelty_free'].astype(bool)
+            if 'evidence_tags' in self.products_df.columns:
+                self.products_df['evidence_score'] = pd.to_numeric(self.products_df['evidence_tags'], errors='coerce').fillna(0.8)
+            if 'fragrance_free' in self.products_df.columns:
+                self.products_df['fragrance_free'] = self.products_df['fragrance_free'].astype(bool)
+            if 'vegan' in self.products_df.columns:
+                self.products_df['vegan'] = self.products_df['vegan'].astype(bool)
+            if 'cruelty_free' in self.products_df.columns:
+                self.products_df['cruelty_free'] = self.products_df['cruelty_free'].astype(bool)
         else:
             self.products_df = pd.DataFrame()
 
