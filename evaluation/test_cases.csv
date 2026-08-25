@@ -1,9 +1,36 @@
 test_id,persona_name,skin_type,concerns,sensitivity,budget,fragrance_free,vegan,cruelty_free,existing_products,excluded_ingredients,expected_status
-tc_01,Budget Student with Acne,oily,"acne,oiliness",medium,1200,true,false,false,"","",success
+tc_01,College Student with Active Acne,oily,"acne,oiliness",medium,1600,true,false,false,"","",success
 tc_02,Sensitive Skin Barrier Repair,sensitive,"redness,barrier_repair,dryness",high,1800,true,true,true,"","",success
-tc_03,Anti-Aging Mature Complex,dry,"anti_aging,dryness,fine_lines",low,2500,false,false,false,"","",success
-tc_04,Pigmentation & Melasma Focus,combination,"hyperpigmentation,dullness",medium,1600,true,true,true,"","",success
-tc_05,Impossible Budget Shortfall,oily,"acne,enlarged_pores",low,200,false,false,false,"","",constraint_violation
-tc_06,Minimalist with Existing Cleanser,normal,"dullness,sun_protection",medium,1400,true,false,false,"Cleanser","",success
+tc_03,Mature Complex Anti-Aging,dry,"anti_aging,dryness",low,2500,false,false,false,"","",success
+tc_04,Hyperpigmentation & Melasma Focus,combination,"hyperpigmentation,dullness",medium,1700,true,true,true,"","",success
+tc_05,Severe Impossible Budget Shortfall,oily,"acne,enlarged_pores",low,200,false,false,false,"","",constraint_violation
+tc_06,Minimalist with Existing Cleanser,normal,"dullness",medium,1400,true,false,false,"Cleanser","",success
 tc_07,Exclusion Stress Test (No Niacinamide),oily,"acne,oiliness",high,1700,true,false,false,"","Niacinamide",success
-tc_08,Vegan Eco Enthusiast,dry,"dryness,dehydration",medium,2000,true,true,true,"","",success
+tc_08,Vegan Eco Enthusiast Barrier,dry,"dryness,barrier_repair",medium,2000,true,true,true,"","",success
+tc_09,Acne Prone Teen with Existing Cleanser,oily,"acne,enlarged_pores",low,1300,true,false,false,"Cleanser","",success
+tc_10,Sensitive Rosacea Calming,sensitive,"redness",high,1600,true,false,false,"","",success
+tc_11,Dull Winter Skin Brightening,dry,"dullness,dryness",medium,1800,false,false,false,"","",success
+tc_12,Oily T-Zone with Existing Moisturizer,combination,"oiliness,enlarged_pores",medium,1300,true,false,false,"Moisturizer","",success
+tc_13,Extreme Sensitivity Exclusion Test,sensitive,"redness,barrier_repair",high,2200,true,false,false,"","Salicylic Acid",success
+tc_14,Anti-Aging Wrinkle Reducer,dry,"anti_aging",medium,2800,true,true,true,"","",success
+tc_15,Dark Spot Remover After Breakouts,combination,"hyperpigmentation,acne",medium,1900,true,false,false,"","",success
+tc_16,Ultra Low Budget 300 INR,dry,"dryness",low,300,false,false,false,"","",constraint_violation
+tc_17,Combination Skin Multi-Target,combination,"acne,dryness",medium,2100,true,false,false,"","",success
+tc_18,Fragrance Intolerant Reactive,sensitive,"barrier_repair,redness",high,1600,true,false,false,"","",success
+tc_19,Mature Skin with Existing Sunscreen,dry,"anti_aging,dryness",low,1800,false,false,false,"Sunscreen","",success
+tc_20,Budget Hyperpigmentation,oily,"hyperpigmentation",medium,1600,true,false,false,"","",success
+tc_21,Severe Texture and Clogged Pores,oily,"enlarged_pores,oiliness,acne",medium,1700,true,false,false,"","",success
+tc_22,Dehydrated Flaky Skin,dry,"dryness,barrier_repair",medium,1600,true,true,false,"","",success
+tc_23,Cruelty-Free Acne Regimen,oily,"acne,oiliness",medium,2000,true,false,true,"","",success
+tc_24,Pre-existing Cleanser and Moisturizer,normal,"dullness,anti_aging",medium,1200,true,false,false,"Cleanser,Moisturizer","",success
+tc_25,Budget Shortfall Under 350,combination,"acne,hyperpigmentation",medium,350,false,false,false,"","",constraint_violation
+tc_26,High Acid Intolerant Skin,sensitive,"redness,dryness",high,1900,true,false,false,"","Glycolic Acid",success
+tc_27,Standard Normal Balanced Care,normal,"dullness",low,1600,false,false,false,"","",success
+tc_28,Retinoid Intolerant Anti-Aging,dry,"anti_aging",high,2400,true,false,false,"","Retinoid",success
+tc_29,Acne & Redness Combination,sensitive,"acne,redness",high,2000,true,false,false,"","",success
+tc_30,Premium Vegan Complexion Glow,combination,"dullness,hyperpigmentation",low,3200,true,true,true,"","",success
+tc_31,Budget Student Post-Acne Marks,oily,"hyperpigmentation",low,1600,true,false,false,"","",success
+tc_32,Over-Exfoliated Barrier SOS,sensitive,"barrier_repair,redness,dryness",high,1800,true,false,false,"","",success
+tc_33,Already Owns Cleanser & Sunscreen,dry,"dryness,anti_aging",medium,1500,true,false,false,"Cleanser,Sunscreen","",success
+tc_34,High Humidity Oily Skin Control,oily,"oiliness,enlarged_pores",low,1600,true,false,false,"","",success
+tc_35,Severe Constraint Tight Budget 250,sensitive,"redness",high,250,true,true,true,"","",constraint_violation

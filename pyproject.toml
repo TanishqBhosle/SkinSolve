@@ -1,0 +1,10 @@
+[tool.pyright]
+include = ["backend", "evaluation", "scratch"]
+extraPaths = [
+    "backend",
+    "C:/Users/tanis/AppData/Local/Python/pythoncore-3.14-64/Lib/site-packages"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]

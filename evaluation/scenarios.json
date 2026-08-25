@@ -1,0 +1,87 @@
+[
+  {
+    "scenario_id": "sc_01",
+    "name": "College Student with Active Acne",
+    "user_profile": {
+      "skin_type": "oily",
+      "concerns": ["acne", "oiliness"],
+      "sensitivity": "medium",
+      "budget": 1200,
+      "fragrance_free": true,
+      "vegan": false,
+      "cruelty_free": false,
+      "existing_products": [],
+      "excluded_ingredients": []
+    },
+    "expected_status": "success",
+    "expected_categories": ["Cleanser", "Treatment", "Moisturizer", "Sunscreen"]
+  },
+  {
+    "scenario_id": "sc_02",
+    "name": "Sensitive Skin Barrier Repair",
+    "user_profile": {
+      "skin_type": "sensitive",
+      "concerns": ["redness", "barrier_repair", "dryness"],
+      "sensitivity": "high",
+      "budget": 1800,
+      "fragrance_free": true,
+      "vegan": true,
+      "cruelty_free": true,
+      "existing_products": [],
+      "excluded_ingredients": []
+    },
+    "expected_status": "success",
+    "expected_categories": ["Cleanser", "Treatment", "Moisturizer", "Sunscreen"]
+  },
+  {
+    "scenario_id": "sc_03",
+    "name": "Mature Complex Anti-Aging",
+    "user_profile": {
+      "skin_type": "dry",
+      "concerns": ["anti_aging", "dryness"],
+      "sensitivity": "low",
+      "budget": 2500,
+      "fragrance_free": false,
+      "vegan": false,
+      "cruelty_free": false,
+      "existing_products": [],
+      "excluded_ingredients": []
+    },
+    "expected_status": "success",
+    "expected_categories": ["Cleanser", "Treatment", "Moisturizer", "Sunscreen"]
+  },
+  {
+    "scenario_id": "sc_04",
+    "name": "Hyperpigmentation & Melasma Focus",
+    "user_profile": {
+      "skin_type": "combination",
+      "concerns": ["hyperpigmentation", "dullness"],
+      "sensitivity": "medium",
+      "budget": 1600,
+      "fragrance_free": true,
+      "vegan": true,
+      "cruelty_free": true,
+      "existing_products": [],
+      "excluded_ingredients": []
+    },
+    "expected_status": "success",
+    "expected_categories": ["Cleanser", "Treatment", "Moisturizer", "Sunscreen"]
+  },
+  {
+    "scenario_id": "sc_05",
+    "name": "Severe Impossible Budget Shortfall",
+    "user_profile": {
+      "skin_type": "oily",
+      "concerns": ["acne", "enlarged_pores"],
+      "sensitivity": "low",
+      "budget": 200,
+      "fragrance_free": false,
+      "vegan": false,
+      "cruelty_free": false,
+      "existing_products": [],
+      "excluded_ingredients": []
+    },
+    "expected_status": "constraint_violation",
+    "expected_categories": []
+  }
+]

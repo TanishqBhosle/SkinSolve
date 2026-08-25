@@ -18,9 +18,19 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
   const [vegan, setVegan] = useState<boolean>(initialProfile?.vegan ?? false);
   const [crueltyFree] = useState<boolean>(initialProfile?.cruelty_free ?? false);
   const [existingProducts, setExistingProducts] = useState<string[]>(initialProfile?.existing_products || []);
-  const [excludedIngredients] = useState<string[]>(initialProfile?.excluded_ingredients || []);
+  const [excludedIngredients, setExcludedIngredients] = useState<string[]>(initialProfile?.excluded_ingredients || []);
 
   const totalSteps = 5;
+
+  const commonExclusions = ["Niacinamide", "Salicylic Acid", "Retinoid", "Vitamin C", "Glycolic Acid"];
+
+  const toggleExclusion = (ing: string) => {
+    if (excludedIngredients.includes(ing)) {
+      setExcludedIngredients(excludedIngredients.filter(i => i !== ing));
+    } else {
+      setExcludedIngredients([...excludedIngredients, ing]);
+    }
+  };
 
   const skinTypeOptions = [
     { id: 'oily', title: 'Oily', desc: 'Excess sebum across entire face, shiny by midday.' },
@@ -189,25 +199,52 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
               ))}
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-muted border border-surface-border space-y-3">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={fragranceFree}
-                  onChange={(e) => setFragranceFree(e.target.checked)}
-                  className="rounded border-surface-border text-sage-700 focus:ring-sage-700 w-4 h-4"
-                />
-                <span className="text-sm font-medium text-charcoal-900">Strictly Fragrance-Free Formulations</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={vegan}
-                  onChange={(e) => setVegan(e.target.checked)}
-                  className="rounded border-surface-border text-sage-700 focus:ring-sage-700 w-4 h-4"
-                />
-                <span className="text-sm font-medium text-charcoal-900">100% Vegan Formulations</span>
-              </label>
+            <div className="p-4 rounded-xl bg-surface-muted border border-surface-border space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <label className="flex items-center space-x-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={fragranceFree}
+                    onChange={(e) => setFragranceFree(e.target.checked)}
+                    className="rounded border-surface-border text-sage-700 focus:ring-sage-700 w-4 h-4"
+                  />
+                  <span className="text-xs font-semibold text-charcoal-900">100% Fragrance-Free</span>
+                </label>
+                <label className="flex items-center space-x-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={vegan}
+                    onChange={(e) => setVegan(e.target.checked)}
+                    className="rounded border-surface-border text-sage-700 focus:ring-sage-700 w-4 h-4"
+                  />
+                  <span className="text-xs font-semibold text-charcoal-900">Vegan Formulations</span>
+                </label>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-charcoal-700 uppercase tracking-wide block mb-2">
+                  Ingredients to Strictly Exclude:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {commonExclusions.map((ing) => {
+                    const isExcluded = excludedIngredients.includes(ing);
+                    return (
+                      <button
+                        type="button"
+                        key={ing}
+                        onClick={() => toggleExclusion(ing)}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all ${
+                          isExcluded
+                            ? 'border-red-400 bg-red-50 text-red-700 font-semibold'
+                            : 'border-surface-border bg-surface-card text-charcoal-600 hover:border-sage-300'
+                        }`}
+                      >
+                        {isExcluded ? `✕ Exclude ${ing}` : `+ Avoid ${ing}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -227,7 +264,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
             <input
               type="range"
               min="500"
-              max="3500"
+              max="5000"
               step="100"
               value={budget}
               onChange={(e) => setBudget(Number(e.target.value))}
@@ -235,8 +272,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
             />
             <div className="flex justify-between text-xs text-charcoal-400 mt-2">
               <span>₹500 (Budget)</span>
-              <span>₹2,000 (Standard)</span>
-              <span>₹3,500 (Premium)</span>
+              <span>₹2,500 (Standard)</span>
+              <span>₹5,000 (Premium)</span>
             </div>
           </div>
         )}

@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "C:/Users/tanis/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend",
+    "C:/Users/tanis/AppData/Local/Python/pythoncore-3.14-64/Lib/site-packages"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/backend",
+    "C:/Users/tanis/AppData/Local/Python/pythoncore-3.14-64/Lib/site-packages"
+  ]
+}

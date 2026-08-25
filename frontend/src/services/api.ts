@@ -1,6 +1,6 @@
 import type { UserProfileRequest, ProblemParseResponse, RecommendationResponse } from '../types/skincare';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8008/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export async function parseNaturalLanguageProblem(query: string): Promise<ProblemParseResponse> {
   const response = await fetch(`${API_BASE_URL}/parse-problem`, {
@@ -11,7 +11,8 @@ export async function parseNaturalLanguageProblem(query: string): Promise<Proble
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to parse natural language problem.');
+    const msg = errorData.error?.message || errorData.detail || 'Failed to parse natural language problem.';
+    throw new Error(msg);
   }
 
   return response.json();
@@ -26,7 +27,8 @@ export async function generateRecommendations(profile: UserProfileRequest): Prom
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'Failed to generate recommendations.');
+    const msg = errorData.error?.message || errorData.detail || 'Failed to generate recommendations.';
+    throw new Error(msg);
   }
 
   return response.json();
@@ -44,6 +46,14 @@ export async function getEvidenceBase(): Promise<any[]> {
   const response = await fetch(`${API_BASE_URL}/evidence`);
   if (!response.ok) {
     throw new Error('Failed to fetch evidence data.');
+  }
+  return response.json();
+}
+
+export async function getEvaluationMetrics(): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/evaluation`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch evaluation metrics.');
   }
   return response.json();
 }
