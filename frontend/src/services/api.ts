@@ -1,0 +1,49 @@
+import type { UserProfileRequest, ProblemParseResponse, RecommendationResponse } from '../types/skincare';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8008/api/v1';
+
+export async function parseNaturalLanguageProblem(query: string): Promise<ProblemParseResponse> {
+  const response = await fetch(`${API_BASE_URL}/parse-problem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to parse natural language problem.');
+  }
+
+  return response.json();
+}
+
+export async function generateRecommendations(profile: UserProfileRequest): Promise<RecommendationResponse> {
+  const response = await fetch(`${API_BASE_URL}/recommendations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profile),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to generate recommendations.');
+  }
+
+  return response.json();
+}
+
+export async function getProductCatalog(): Promise<any[]> {
+  const response = await fetch(`${API_BASE_URL}/products`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch product catalog.');
+  }
+  return response.json();
+}
+
+export async function getEvidenceBase(): Promise<any[]> {
+  const response = await fetch(`${API_BASE_URL}/evidence`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch evidence data.');
+  }
+  return response.json();
+}
