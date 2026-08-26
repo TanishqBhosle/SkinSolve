@@ -29,15 +29,15 @@ class ConstraintEngine:
                 def contains_excluded(row):
                     ing_text = str(row.get('ingredients_text', '')).lower()
                     name_text = str(row.get('name', '')).lower()
-                    if exc_clean == "retinoid" or exc_clean == "retinol":
+                    if exc_clean in ["retinoid", "retinol"]:
                         return bool(re.search(r'\b(retinoid|retinol|retinal|retinoate|tretinoin|adapalene)\b', ing_text + " " + name_text))
-                    elif exc_clean == "salicylic acid" or exc_clean == "bha":
+                    elif exc_clean in ["salicylic acid", "bha"]:
                         return bool(re.search(r'\b(salicylic|salicylate|betaine salicylate|bha)\b', ing_text + " " + name_text))
                     elif exc_clean == "niacinamide":
                         return bool(re.search(r'\b(niacinamide|nicotinamide)\b', ing_text + " " + name_text))
-                    elif exc_clean == "vitamin c":
+                    elif exc_clean in ["vitamin c", "ascorbic acid"]:
                         return bool(re.search(r'\b(ascorbic|ascorbyl|tetrahexyldecyl|ethyl ascorbic)\b', ing_text + " " + name_text))
-                    elif exc_clean == "glycolic acid" or exc_clean == "aha":
+                    elif exc_clean in ["glycolic acid", "aha"]:
                         return bool(re.search(r'\b(glycolic|lactic|mandelic|tartaric|aha)\b', ing_text + " " + name_text))
                     else:
                         return exc_clean in ing_text or exc_clean in name_text
@@ -48,7 +48,7 @@ class ConstraintEngine:
                 if dropped > 0:
                     rejections_log.append(f"Filtered out {dropped} product(s) containing excluded ingredient '{exc}'.")
 
-        # 3. Existing Products Exclusion (Avoid recommending categories the user already owns and wants to keep)
+        # 3. Existing Products Exclusion (Avoid recommending categories the user already owns)
         if profile.existing_products:
             pre_count = len(filtered_df)
             filtered_df = filtered_df[~filtered_df['category'].isin(profile.existing_products)]
@@ -59,11 +59,10 @@ class ConstraintEngine:
         # 4. High Sensitivity Profile Hard Filter
         if profile.sensitivity == "high":
             pre_count = len(filtered_df)
-            # Filter out harsh peels, high AHA acids, or alcohol denat
             def is_irritating_for_sensitive(row):
                 name = str(row.get('name', '')).lower()
                 ing = str(row.get('ingredients_text', '')).lower()
-                has_high_aha = bool(re.search(r'(?:glycolic|aha 7%|peeling|10% aha|30% aha)', name + " " + ing))
+                has_high_aha = bool(re.search(r'(?:glycolic 10%|aha 7%|peeling|10% aha|30% aha)', name + " " + ing))
                 has_alcohol = bool(re.search(r'(?:alcohol denat|sd alcohol)', ing))
                 return has_high_aha or has_alcohol
 
@@ -73,10 +72,9 @@ class ConstraintEngine:
             if dropped > 0:
                 rejections_log.append(f"Omitted {dropped} high-strength chemical exfoliants/alcohol formulas for sensitive skin safety.")
 
-        # 5. Soft Preferences (Vegan & Cruelty-Free) - Enforce strictly if candidate pool remains adequate
+        # 5. Soft Preferences (Vegan & Cruelty-Free) - Enforce if candidate pool remains adequate
         if profile.vegan:
             vegan_candidates = filtered_df[filtered_df['vegan'] == True]
-            # Check if each needed category has at least 1 candidate
             categories_present = set(vegan_candidates['category'].unique())
             needed = set(df['category'].unique()) - set(profile.existing_products or [])
             if needed.issubset(categories_present) or len(vegan_candidates) >= 8:
@@ -97,7 +95,11 @@ class ConstraintEngine:
     def check_routine_active_conflicts(products: List[Dict[str, Any]]) -> Tuple[bool, List[str]]:
         """
         Check for cross-product active ingredient contraindications in a routine.
-        E.g. BHA + Retinoid in same immediate session, or High acid + Retinoid.
+        Rules:
+        - Retinoid + BHA (Salicylic Acid): separate to alternate AM/PM slots
+        - Retinoid + Strong AHA (Glycolic Acid): separate to alternate slots
+        - Vitamin C (L-Ascorbic Acid) + Retinoid: separate Vitamin C to AM, Retinoid to PM
+        - High Niacinamide + L-Ascorbic Acid: monitor for flushing, separate slots
         """
         conflicts = []
         has_retinoid = any(
@@ -112,11 +114,17 @@ class ConstraintEngine:
             re.search(r'\b(glycolic|lactic acid 10%)\b', str(p.get('ingredients_text', '')) + " " + str(p.get('name', '')).lower())
             for p in products
         )
+        has_vit_c = any(
+            re.search(r'\b(ascorbic acid|l-ascorbic|pure vitamin c)\b', str(p.get('ingredients_text', '')) + " " + str(p.get('name', '')).lower())
+            for p in products
+        )
 
         if has_retinoid and has_bha:
-            conflicts.append("Retinoid and BHA are both present; separated into alternate AM/PM application slots to avoid barrier irritation.")
+            conflicts.append("Retinoid and BHA detected in routine; placed in separate AM/PM slots to avoid skin barrier irritation.")
         if has_retinoid and has_strong_aha:
-            conflicts.append("Retinoid and High AHA acid are both present; AHA placed in alternate routine slot.")
+            conflicts.append("Retinoid and High AHA acid detected; AHA scheduled for alternate morning/evening routine slot.")
+        if has_retinoid and has_vit_c:
+            conflicts.append("Pure Vitamin C and Retinoid separated: Vitamin C assigned to AM protection, Retinoid assigned to PM renewal.")
 
-        # Routine is safe if separated or cleanly slotted
         return True, conflicts
+

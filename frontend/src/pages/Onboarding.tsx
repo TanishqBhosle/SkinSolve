@@ -16,11 +16,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
   const [budget, setBudget] = useState<number>(initialProfile?.budget || 1500);
   const [fragranceFree, setFragranceFree] = useState<boolean>(initialProfile?.fragrance_free ?? true);
   const [vegan, setVegan] = useState<boolean>(initialProfile?.vegan ?? false);
-  const [crueltyFree] = useState<boolean>(initialProfile?.cruelty_free ?? false);
+  const [crueltyFree, setCrueltyFree] = useState<boolean>(initialProfile?.cruelty_free ?? false);
   const [existingProducts, setExistingProducts] = useState<string[]>(initialProfile?.existing_products || []);
   const [excludedIngredients, setExcludedIngredients] = useState<string[]>(initialProfile?.excluded_ingredients || []);
 
-  const totalSteps = 5;
+  const totalSteps = 4;
 
   const commonExclusions = ["Niacinamide", "Salicylic Acid", "Retinoid", "Vitamin C", "Glycolic Acid"];
 
@@ -36,7 +36,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
     { id: 'oily', title: 'Oily', desc: 'Excess sebum across entire face, shiny by midday.' },
     { id: 'dry', title: 'Dry', desc: 'Tight, flaky, or rough texture needing deep nourishment.' },
     { id: 'combination', title: 'Combination', desc: 'Oily T-zone (forehead, nose) with normal/dry cheeks.' },
-    { id: 'sensitive', title: 'Sensitive / Reactive', desc: 'Easily turns red, burns, or reacts to fragrance.' },
+    { id: 'sensitive', title: 'Sensitive / Reactive', desc: 'Easily turns red, burns, or reacts to active ingredients.' },
     { id: 'normal', title: 'Balanced / Normal', desc: 'Evenly hydrated with minimal breakouts or oiliness.' },
   ];
 
@@ -83,267 +83,281 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
         vegan,
         cruelty_free: crueltyFree,
         existing_products: existingProducts,
-        excluded_ingredients: excludedIngredients,
+        excluded_ingredients: excludedIngredients
       });
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      {/* Progress Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between text-xs font-semibold text-charcoal-500 uppercase tracking-wider mb-2">
-          <span>Step {step} of {totalSteps}</span>
-          <span>{Math.round((step / totalSteps) * 100)}% Completed</span>
+    <div className="min-h-screen bg-[#FAF8F5] py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+      <div className="max-w-2xl mx-auto w-full bg-white border border-[#E5E0D7] rounded-3xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
+        {/* Progress Header */}
+        <div className="flex items-center justify-between pb-6 mb-8 border-b border-[#E5E0D7]">
+          <div className="flex items-center space-x-3">
+            <span className="w-10 h-10 rounded-2xl bg-[#1B3B2B] text-white flex items-center justify-center font-bold text-sm font-serif">
+              0{step}
+            </span>
+            <div>
+              <span className="text-xs font-extrabold text-[#4A7C59] uppercase tracking-wider block">SkinSolve Assessment</span>
+              <span className="text-sm font-bold text-[#1C2826]">Step 0{step} of 0{totalSteps}</span>
+            </div>
+          </div>
+          <div className="w-32 bg-[#E6EFE9] h-2 rounded-full overflow-hidden">
+            <div 
+              className="bg-[#1B3B2B] h-full transition-all duration-300 rounded-full"
+              style={{ width: `${(step / totalSteps) * 100}%` }}
+            />
+          </div>
         </div>
-        <div className="w-full bg-surface-muted h-2 rounded-full overflow-hidden">
-          <div 
-            className="bg-sage-700 h-full transition-all duration-300 rounded-full"
-            style={{ width: `${(step / totalSteps) * 100}%` }}
-          />
-        </div>
-      </div>
 
-      <div className="bg-surface-card p-8 rounded-3xl border border-surface-border shadow-sm min-h-[420px] flex flex-col justify-between">
-        {/* Step 1: Skin Type */}
+        {/* Step 1: Skin Type & Sensitivity */}
         {step === 1 && (
-          <div>
-            <span className="text-xs font-bold text-sage-700 tracking-wider uppercase">01 / Profile</span>
-            <h2 className="text-2xl font-bold font-serif text-charcoal-900 mt-1 mb-2">What is your primary skin type?</h2>
-            <p className="text-sm text-charcoal-600 mb-6">Select the option that best describes your baseline skin behavior.</p>
+          <div className="space-y-6 animate-slide-up">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1C2826] font-serif">What is your primary skin type?</h2>
+              <p className="text-sm text-[#556864] mt-1">Select the classification that best describes your baseline dermal behavior.</p>
+            </div>
 
             <div className="space-y-3">
               {skinTypeOptions.map((opt) => (
-                <div
+                <button
                   key={opt.id}
+                  type="button"
                   onClick={() => setSkinType(opt.id)}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
+                  className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     skinType === opt.id
-                      ? 'border-sage-700 bg-sage-50/50 shadow-sm'
-                      : 'border-surface-border hover:border-sage-300 bg-surface-card'
+                      ? 'border-[#4A7C59] bg-[#F4F8F5] shadow-sm'
+                      : 'border-[#E5E0D7] hover:border-[#93BCA0] bg-white'
                   }`}
                 >
                   <div>
-                    <h3 className="font-semibold text-charcoal-900 text-sm">{opt.title}</h3>
-                    <p className="text-xs text-charcoal-500 mt-0.5">{opt.desc}</p>
+                    <h4 className="font-bold text-sm text-[#1C2826]">{opt.title}</h4>
+                    <p className="text-xs text-[#556864] mt-0.5">{opt.desc}</p>
                   </div>
                   {skinType === opt.id && (
-                    <div className="w-5 h-5 rounded-full bg-sage-700 text-white flex items-center justify-center">
-                      <Check className="w-3 h-3" />
+                    <div className="w-6 h-6 rounded-full bg-[#1B3B2B] text-white flex items-center justify-center shrink-0">
+                      <Check className="w-3.5 h-3.5" />
                     </div>
                   )}
-                </div>
+                </button>
               ))}
+            </div>
+
+            <div className="pt-4 border-t border-[#E5E0D7]">
+              <label className="block text-sm font-bold text-[#1C2826] mb-2 font-serif">Sensitivity Level</label>
+              <div className="grid grid-cols-3 gap-3">
+                {['low', 'medium', 'high'].map((lvl) => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setSensitivity(lvl)}
+                    className={`py-2.5 px-4 rounded-xl border text-xs font-bold capitalize transition-all cursor-pointer ${
+                      sensitivity === lvl
+                        ? 'border-[#4A7C59] bg-[#1B3B2B] text-white shadow-sm'
+                        : 'border-[#E5E0D7] text-[#556864] hover:bg-[#F4F8F5]'
+                    }`}
+                  >
+                    {lvl} Sensitivity
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Step 2: Primary Concerns */}
+        {/* Step 2: Skin Concerns & Excluded Ingredients */}
         {step === 2 && (
-          <div>
-            <span className="text-xs font-bold text-sage-700 tracking-wider uppercase">02 / Goals</span>
-            <h2 className="text-2xl font-bold font-serif text-charcoal-900 mt-1 mb-2">What are you looking to improve?</h2>
-            <p className="text-sm text-charcoal-600 mb-6">Choose priority skin goals for your routine.</p>
+          <div className="space-y-6 animate-slide-up">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1C2826] font-serif">Select your skin concerns</h2>
+              <p className="text-sm text-[#556864] mt-1">Choose all active dermal targets you wish to address.</p>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {concernOptions.map((opt) => {
-                const isSelected = concerns.includes(opt.id);
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {concernOptions.map((c) => {
+                const isSelected = concerns.includes(c.id);
                 return (
-                  <div
-                    key={opt.id}
-                    onClick={() => toggleConcern(opt.id)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-sm ${
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => toggleConcern(c.id)}
+                    className={`p-3 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
                       isSelected
-                        ? 'border-sage-700 bg-sage-50/50 text-sage-900 font-semibold'
-                        : 'border-surface-border hover:border-sage-300 text-charcoal-700'
+                        ? 'border-[#4A7C59] bg-[#E6EFE9] text-[#1B3B2B] shadow-xs'
+                        : 'border-[#E5E0D7] text-[#556864] hover:bg-[#F4F8F5]'
                     }`}
                   >
-                    <span>{opt.label}</span>
-                    {isSelected && (
-                      <div className="w-4 h-4 rounded-full bg-sage-700 text-white flex items-center justify-center">
-                        <Check className="w-2.5 h-2.5" />
-                      </div>
-                    )}
-                  </div>
+                    <span>{c.label}</span>
+                    {isSelected && <Check className="w-4 h-4 text-[#1B3B2B]" />}
+                  </button>
                 );
               })}
             </div>
+
+            <div className="pt-4 border-t border-[#E5E0D7]">
+              <label className="block text-sm font-bold text-[#1C2826] mb-2 font-serif">Exclude Specific Ingredients (Optional)</label>
+              <div className="flex flex-wrap gap-2">
+                {commonExclusions.map((ing) => {
+                  const isExcluded = excludedIngredients.includes(ing);
+                  return (
+                    <button
+                      key={ing}
+                      type="button"
+                      onClick={() => toggleExclusion(ing)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                        isExcluded
+                          ? 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-[#E5E0D7] text-[#556864] hover:bg-[#F4F8F5]'
+                      }`}
+                    >
+                      {isExcluded ? `✕ Avoid ${ing}` : `+ Exclude ${ing}`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Step 3: Sensitivity & Fragrance */}
+        {/* Step 3: Budget & Formulative Preferences */}
         {step === 3 && (
-          <div>
-            <span className="text-xs font-bold text-sage-700 tracking-wider uppercase">03 / Sensitivity</span>
-            <h2 className="text-2xl font-bold font-serif text-charcoal-900 mt-1 mb-2">How sensitive is your skin?</h2>
-            <p className="text-sm text-charcoal-600 mb-6">We avoid harsh acids and high-strength actives for sensitive profiles.</p>
+          <div className="space-y-6 animate-slide-up">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1C2826] font-serif">Set your total routine budget</h2>
+              <p className="text-sm text-[#556864] mt-1">SkinSolve guarantees your recommended 4-step routine total will not exceed this limit.</p>
+            </div>
 
-            <div className="grid grid-cols-3 gap-3 mb-8">
-              {[
-                { id: 'low', label: 'Resilient', desc: 'Rarely stings or turns red' },
-                { id: 'medium', label: 'Moderate', desc: 'Occasionally reactive' },
-                { id: 'high', label: 'High / Reactive', desc: 'Flushes or burns easily' },
-              ].map((tier) => (
-                <div
-                  key={tier.id}
-                  onClick={() => setSensitivity(tier.id)}
-                  className={`p-4 rounded-xl border cursor-pointer text-center transition-all ${
-                    sensitivity === tier.id
-                      ? 'border-sage-700 bg-sage-50 text-sage-900 font-semibold'
-                      : 'border-surface-border hover:border-sage-300'
+            <div className="bg-[#F4F8F5] border border-[#93BCA0]/30 rounded-2xl p-6 text-center space-y-4">
+              <div className="text-xs uppercase font-extrabold text-[#4A7C59] tracking-wider">Routine Budget Ceiling</div>
+              <div className="text-4xl font-extrabold text-[#1B3B2B] font-serif">₹{budget}</div>
+              <input
+                type="range"
+                min="400"
+                max="5000"
+                step="100"
+                value={budget}
+                onChange={(e) => setBudget(Number(e.target.value))}
+                className="w-full accent-[#1B3B2B] cursor-pointer"
+              />
+              <div className="flex justify-between text-xs text-[#556864] font-semibold">
+                <span>₹400 (Student)</span>
+                <span>₹2,500 (Mid-Range)</span>
+                <span>₹5,000 (Premium)</span>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#E5E0D7] space-y-3">
+              <label className="block text-sm font-bold text-[#1C2826] font-serif">Formulative Constraints</label>
+              
+              <button
+                type="button"
+                onClick={() => setFragranceFree(!fragranceFree)}
+                className={`w-full p-3.5 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                  fragranceFree ? 'border-[#4A7C59] bg-[#E6EFE9] text-[#1B3B2B]' : 'border-[#E5E0D7] text-[#556864]'
+                }`}
+              >
+                <span>100% Fragrance-Free & Essential-Oil Free</span>
+                {fragranceFree && <Check className="w-4 h-4 text-[#1B3B2B]" />}
+              </button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVegan(!vegan)}
+                  className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                    vegan ? 'border-[#4A7C59] bg-[#E6EFE9] text-[#1B3B2B]' : 'border-[#E5E0D7] text-[#556864]'
                   }`}
                 >
-                  <div className="text-sm font-bold">{tier.label}</div>
-                  <div className="text-xs text-charcoal-500 mt-1">{tier.desc}</div>
-                </div>
-              ))}
-            </div>
+                  <span>Vegan Only</span>
+                  {vegan && <Check className="w-4 h-4 text-[#1B3B2B]" />}
+                </button>
 
-            <div className="p-4 rounded-xl bg-surface-muted border border-surface-border space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <label className="flex items-center space-x-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={fragranceFree}
-                    onChange={(e) => setFragranceFree(e.target.checked)}
-                    className="rounded border-surface-border text-sage-700 focus:ring-sage-700 w-4 h-4"
-                  />
-                  <span className="text-xs font-semibold text-charcoal-900">100% Fragrance-Free</span>
-                </label>
-                <label className="flex items-center space-x-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={vegan}
-                    onChange={(e) => setVegan(e.target.checked)}
-                    className="rounded border-surface-border text-sage-700 focus:ring-sage-700 w-4 h-4"
-                  />
-                  <span className="text-xs font-semibold text-charcoal-900">Vegan Formulations</span>
-                </label>
-              </div>
-
-              <div>
-                <span className="text-[11px] font-bold text-charcoal-700 uppercase tracking-wide block mb-2">
-                  Ingredients to Strictly Exclude:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {commonExclusions.map((ing) => {
-                    const isExcluded = excludedIngredients.includes(ing);
-                    return (
-                      <button
-                        type="button"
-                        key={ing}
-                        onClick={() => toggleExclusion(ing)}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all ${
-                          isExcluded
-                            ? 'border-red-400 bg-red-50 text-red-700 font-semibold'
-                            : 'border-surface-border bg-surface-card text-charcoal-600 hover:border-sage-300'
-                        }`}
-                      >
-                        {isExcluded ? `✕ Exclude ${ing}` : `+ Avoid ${ing}`}
-                      </button>
-                    );
-                  })}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setCrueltyFree(!crueltyFree)}
+                  className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                    crueltyFree ? 'border-[#4A7C59] bg-[#E6EFE9] text-[#1B3B2B]' : 'border-[#E5E0D7] text-[#556864]'
+                  }`}
+                >
+                  <span>Cruelty-Free Only</span>
+                  {crueltyFree && <Check className="w-4 h-4 text-[#1B3B2B]" />}
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 4: Budget */}
+        {/* Step 4: Existing Products to Keep */}
         {step === 4 && (
-          <div>
-            <span className="text-xs font-bold text-sage-700 tracking-wider uppercase">04 / Budget</span>
-            <h2 className="text-2xl font-bold font-serif text-charcoal-900 mt-1 mb-2">What is your total routine budget?</h2>
-            <p className="text-sm text-charcoal-600 mb-8">SkinSolve guarantees your routine total will not exceed this limit.</p>
-
-            <div className="text-center py-6 bg-sage-50/60 rounded-2xl border border-sage-200 mb-8">
-              <span className="text-4xl font-extrabold text-sage-800 font-serif">₹{budget.toLocaleString()}</span>
-              <span className="block text-xs text-sage-600 mt-1 uppercase font-semibold">Total Budget Ceiling (INR)</span>
+          <div className="space-y-6 animate-slide-up">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1C2826] font-serif">Do you already own products to keep?</h2>
+              <p className="text-sm text-[#556864] mt-1">Select any steps you already have. SkinSolve will exclude recommending redundant items and reallocate budget.</p>
             </div>
 
-            <input
-              type="range"
-              min="500"
-              max="5000"
-              step="100"
-              value={budget}
-              onChange={(e) => setBudget(Number(e.target.value))}
-              className="w-full h-2 bg-surface-muted rounded-lg appearance-none cursor-pointer accent-sage-700"
-            />
-            <div className="flex justify-between text-xs text-charcoal-400 mt-2">
-              <span>₹500 (Budget)</span>
-              <span>₹2,500 (Standard)</span>
-              <span>₹5,000 (Premium)</span>
-            </div>
-          </div>
-        )}
-
-        {/* Step 5: Existing Products */}
-        {step === 5 && (
-          <div>
-            <span className="text-xs font-bold text-sage-700 tracking-wider uppercase">05 / Inventory</span>
-            <h2 className="text-2xl font-bold font-serif text-charcoal-900 mt-1 mb-2">Do you already own any of these?</h2>
-            <p className="text-sm text-charcoal-600 mb-6">Select products you already have so we don't duplicate them in your budget.</p>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3">
               {categoryOptions.map((cat) => {
-                const isOwned = existingProducts.includes(cat);
+                const isSelected = existingProducts.includes(cat);
                 return (
-                  <div
+                  <button
                     key={cat}
+                    type="button"
                     onClick={() => toggleExisting(cat)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-sm ${
-                      isOwned
-                        ? 'border-sage-700 bg-sage-50 text-sage-900 font-semibold'
-                        : 'border-surface-border hover:border-sage-300 text-charcoal-700'
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                      isSelected
+                        ? 'border-[#4A7C59] bg-[#E6EFE9] text-[#1B3B2B] shadow-xs'
+                        : 'border-[#E5E0D7] text-[#556864] hover:bg-[#F4F8F5]'
                     }`}
                   >
-                    <span>I own a {cat}</span>
-                    {isOwned && (
-                      <div className="w-4 h-4 rounded-full bg-sage-700 text-white flex items-center justify-center">
-                        <Check className="w-2.5 h-2.5" />
-                      </div>
-                    )}
-                  </div>
+                    <div>
+                      <span className="font-bold text-sm block">{cat}</span>
+                      <span className="text-[11px] text-[#556864]">Already own a {cat.toLowerCase()}</span>
+                    </div>
+                    {isSelected && <Check className="w-4 h-4 text-[#1B3B2B]" />}
+                  </button>
                 );
               })}
             </div>
 
-            <div className="p-4 rounded-xl bg-surface-muted border border-surface-border text-xs text-charcoal-600">
-              <span className="font-semibold block text-charcoal-800 mb-1">💡 Smart Optimization Note:</span>
-              Categories you own will be excluded from the recommended routine shopping cart, allowing your full budget to be focused on targeted active steps.
+            <div className="bg-[#FDF3ED] border border-[#E89D75]/40 rounded-2xl p-4 text-xs text-[#1C2826]">
+              <span className="font-bold text-[#E89D75] block mb-1">Minimal Routine Philosophy:</span>
+              SkinSolve recommends at most 1 product per core category to prevent redundant active overloading.
             </div>
           </div>
         )}
 
-        {/* Navigation Buttons */}
-        <div className="mt-8 pt-6 border-t border-surface-border flex items-center justify-between">
+        {/* Wizard Action Buttons */}
+        <div className="mt-10 pt-6 border-t border-[#E5E0D7] flex items-center justify-between">
           {step > 1 ? (
             <button
+              type="button"
               onClick={() => setStep(step - 1)}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-charcoal-600 hover:text-charcoal-900 text-sm font-medium transition-colors"
+              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full border border-[#E5E0D7] text-[#556864] text-sm font-semibold hover:bg-[#F4F8F5] transition-all cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
             </button>
           ) : (
             <button
+              type="button"
               onClick={onCancel}
-              className="text-xs text-charcoal-400 hover:text-charcoal-700 transition-colors"
+              className="text-xs font-semibold text-[#556864] hover:text-[#1C2826] cursor-pointer"
             >
               Cancel
             </button>
           )}
 
           <button
+            type="button"
             onClick={handleNext}
-            className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-sage-700 hover:bg-sage-800 text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+            className="inline-flex items-center space-x-2 px-7 py-3 rounded-full bg-[#1B3B2B] hover:bg-[#264E3A] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
           >
             <span>{step === totalSteps ? 'Generate Routine' : 'Next Step'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-[#E89D75]" />
           </button>
         </div>
       </div>
     </div>
   );
 };
+

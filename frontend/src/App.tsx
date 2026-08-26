@@ -5,16 +5,20 @@ import { Onboarding } from './pages/Onboarding';
 import { Results } from './pages/Results';
 import { Catalog } from './pages/Catalog';
 import { Evaluation } from './pages/Evaluation';
+import { SavedRoutines } from './pages/SavedRoutines';
+import { TrustSafety } from './pages/TrustSafety';
+import { AnalysisModal } from './components/AnalysisModal';
 import type { UserProfileRequest, ProblemParseResponse, RecommendationResponse } from './types/skincare';
 import { generateRecommendations } from './services/api';
-import { Sparkles } from 'lucide-react';
 
 export function App() {
   const [currentView, setCurrentView] = useState<string>('landing');
   const [userProfile, setUserProfile] = useState<UserProfileRequest | null>(null);
   const [parsedInitialData, setParsedInitialData] = useState<Partial<UserProfileRequest> | undefined>(undefined);
   const [recommendationResult, setRecommendationResult] = useState<RecommendationResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingModalOpen, setLoadingModalOpen] = useState<boolean>(false);
+  const [pendingRecommendation, setPendingRecommendation] = useState<RecommendationResponse | null>(null);
+  const [pendingProfile, setPendingProfile] = useState<UserProfileRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleStartQuiz = () => {
@@ -39,17 +43,31 @@ export function App() {
 
   const handleProfileSubmit = async (profile: UserProfileRequest) => {
     setUserProfile(profile);
-    setLoading(true);
     setError(null);
     try {
+      setLoadingModalOpen(true);
       const results = await generateRecommendations(profile);
-      setRecommendationResult(results);
-      setCurrentView('results');
+      setPendingRecommendation(results);
+      setPendingProfile(profile);
     } catch (err: any) {
+      setLoadingModalOpen(false);
       setError(err.message || 'An error occurred while generating recommendations.');
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleAnalysisComplete = () => {
+    setLoadingModalOpen(false);
+    if (pendingRecommendation && pendingProfile) {
+      setRecommendationResult(pendingRecommendation);
+      setUserProfile(pendingProfile);
+      setCurrentView('results');
+    }
+  };
+
+  const handleLoadSavedRoutine = (rec: RecommendationResponse, prof: UserProfileRequest) => {
+    setRecommendationResult(rec);
+    setUserProfile(prof);
+    setCurrentView('results');
   };
 
   return (
@@ -60,27 +78,23 @@ export function App() {
         onStartQuiz={handleStartQuiz}
       />
 
-      <main className="flex-1">
-        {loading && (
-          <div className="max-w-md mx-auto px-4 py-24 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-sage-100 text-sage-700 flex items-center justify-center mx-auto mb-6 animate-pulse">
-              <Sparkles className="w-8 h-8 animate-spin" />
-            </div>
-            <h2 className="text-xl font-bold font-serif text-charcoal-900 mb-2">Analyzing Skincare Constraints...</h2>
-            <p className="text-xs text-charcoal-600">
-              Evaluating candidate formulas, testing active compatibility, and optimizing your minimal routine.
-            </p>
-          </div>
-        )}
+      <AnalysisModal
+        isOpen={loadingModalOpen}
+        onComplete={handleAnalysisComplete}
+      />
 
+      <main className="flex-1">
         {error && (
           <div className="max-w-md mx-auto px-4 py-16 text-center">
-            <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm">
-              <p className="font-semibold mb-2">Error Connecting to Engine</p>
-              <p className="text-xs mb-4">{error}</p>
+            <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm shadow-sm">
+              <p className="font-bold font-serif mb-2 text-base text-[#1C2826]">Error Connecting to Recommendation Engine</p>
+              <p className="text-xs text-[#556864] mb-4">{error}</p>
               <button
-                onClick={() => setCurrentView('landing')}
-                className="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-xl"
+                onClick={() => {
+                  setError(null);
+                  setCurrentView('landing');
+                }}
+                className="px-5 py-2.5 bg-[#1B3B2B] text-white text-xs font-bold rounded-full hover:bg-[#264E3A] transition-all cursor-pointer"
               >
                 Return to Home
               </button>
@@ -88,12 +102,13 @@ export function App() {
           </div>
         )}
 
-        {!loading && !error && (
+        {!error && (
           <>
             {currentView === 'landing' && (
               <Landing
                 onStartQuiz={handleStartQuiz}
                 onApplyParsedData={handleApplyParsedData}
+                onNavigate={(view) => setCurrentView(view)}
               />
             )}
 
@@ -116,6 +131,19 @@ export function App() {
             {currentView === 'catalog' && <Catalog />}
 
             {currentView === 'evaluation' && <Evaluation />}
+
+            {currentView === 'saved' && (
+              <SavedRoutines
+                onLoadRoutine={handleLoadSavedRoutine}
+                onNavigate={(view) => setCurrentView(view)}
+              />
+            )}
+
+            {currentView === 'trust' && (
+              <TrustSafety
+                onStartQuiz={handleStartQuiz}
+              />
+            )}
           </>
         )}
       </main>
@@ -124,3 +152,4 @@ export function App() {
 }
 
 export default App;
+

@@ -52,6 +52,7 @@ class ProductRecommendation(BaseModel):
     match_score: int
     score_breakdown: ProductScoreBreakdown
     why_recommended: List[str]
+    why_not_reasons: List[str] = Field(default_factory=list)
     usage_slot: str  # AM, PM, or BOTH
 
 class AlternativeProduct(BaseModel):

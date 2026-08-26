@@ -34,3 +34,10 @@ tc_32,Over-Exfoliated Barrier SOS,sensitive,"barrier_repair,redness,dryness",hig
 tc_33,Already Owns Cleanser & Sunscreen,dry,"dryness,anti_aging",medium,1500,true,false,false,"Cleanser,Sunscreen","",success
 tc_34,High Humidity Oily Skin Control,oily,"oiliness,enlarged_pores",low,1600,true,false,false,"","",success
 tc_35,Severe Constraint Tight Budget 250,sensitive,"redness",high,250,true,true,true,"","",constraint_violation
+tc_36,Acne & Pigmentation Dual Target,oily,"acne,hyperpigmentation",medium,2200,true,true,false,"","",success
+tc_37,Severe Barrier Breakdown Emergency,sensitive,"barrier_repair,redness,dryness",high,2500,true,true,true,"","",success
+tc_38,Low Budget Student Barrier Care,dry,"dryness,barrier_repair",low,450,false,false,false,"","",constraint_violation
+tc_39,Already Owns Treatment and Moisturizer,oily,"acne,oiliness",medium,1200,true,false,false,"Treatment,Moisturizer","",success
+tc_40,Anti-Aging with Retinoid Exclusion,dry,"anti_aging,dullness",medium,2000,true,false,false,"","Retinoid",success
+tc_41,Vegan Sensitive Glow Seeker,combination,"dullness,redness",high,2400,true,true,true,"","",success
+tc_42,High Budget Total Anti-Aging Overhaul,dry,"anti_aging,hyperpigmentation",low,4500,true,false,false,"","",success

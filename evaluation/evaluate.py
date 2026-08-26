@@ -231,5 +231,36 @@ def run_evaluation() -> Dict[str, Any]:
 
     return summary
 
+def get_evaluation_payload() -> Dict[str, Any]:
+    test_cases_path = os.path.join(os.path.dirname(__file__), "test_cases.csv")
+    test_cases_df = pd.read_csv(test_cases_path)
+    n_cases = len(test_cases_df)
+
+    summary = run_evaluation()
+    model_list = []
+    for name, m in summary.items():
+        model_list.append({
+            "model_name": name,
+            "precision_at_k": m["Precision@K"],
+            "recall_at_k": m["Recall@K"],
+            "ndcg_at_k": m["NDCG@K"],
+            "csr": m["CSR (%)"],
+            "completeness": m["Completeness (%)"],
+            "coverage": m["Coverage (%)"],
+            "avg_latency_ms": m["Avg Latency (ms)"],
+            "p50_latency_ms": m["P50 Latency (ms)"],
+            "p95_latency_ms": m["P95 Latency (ms)"]
+        })
+    return {
+        "models": model_list,
+        "scenarios_count": n_cases,
+        "metrics_description": {
+            "csr": "Constraint Satisfaction Rate (% of routines respecting budget ceiling, fragrance-free, and ingredient exclusions)",
+            "completeness": "Routine Completeness (% of needed routine steps fulfilled without omission)",
+            "ndcg_at_k": "Normalized Discounted Cumulative Gain at rank K evaluating graded clinical fit",
+            "coverage": "Fraction of catalog covered across all benchmark recommendations"
+        }
+    }
+
 if __name__ == "__main__":
     run_evaluation()

@@ -45,6 +45,8 @@ class RoutineOptimizer:
                     raw_ing = [i.strip() for i in row['ingredients'].replace("'", "").replace("[", "").replace("]", "").split(",") if i.strip()]
                 clean_ingredients = [str(i).capitalize() for i in raw_ing[:6]] if raw_ing else ["Balanced Emollients", "Hydrating Complex"]
 
+                why_not = cls._generate_why_not_reasons(row, profile, breakdown)
+
                 rec = ProductRecommendation(
                     product_id=str(row['product_id']),
                     name=str(row['name']),
@@ -61,6 +63,7 @@ class RoutineOptimizer:
                     match_score=int(round(score)),
                     score_breakdown=breakdown,
                     why_recommended=why,
+                    why_not_reasons=why_not,
                     usage_slot=slot
                 )
                 scored_products.append(rec)
@@ -226,6 +229,22 @@ class RoutineOptimizer:
         return bullets[:4]
 
     @classmethod
+    def _generate_why_not_reasons(cls, row: pd.Series, profile: UserProfileRequest, breakdown: ProductScoreBreakdown) -> List[str]:
+        reasons = []
+        price = float(row.get('price', 0))
+        if profile.fragrance_free and not bool(row.get('fragrance_free', True)):
+            reasons.append("Contains fragrance (violates strict fragrance-free preference)")
+        if breakdown.skin_compatibility < 12.0:
+            reasons.append(f"Lower skin compatibility rating for {profile.skin_type} skin type")
+        if breakdown.budget_fit < 8.0:
+            reasons.append(f"Price (₹{int(price)}) is high relative to allocated category budget")
+        if breakdown.concern_match < 20.0:
+            reasons.append(f"Lower active ingredient alignment for target concerns ({', '.join(profile.concerns)})")
+        if not reasons:
+            reasons.append("Alternative products were selected due to better cost-to-benefit ratio in total routine bundle optimization.")
+        return reasons[:3]
+
+    @classmethod
     def _build_am_pm_schedules(cls, chosen: Dict[str, ProductRecommendation]) -> Tuple[List[ProductRecommendation], List[ProductRecommendation]]:
         am = []
         pm = []
@@ -267,7 +286,7 @@ class RoutineOptimizer:
     def _handle_budget_shortfall(cls, current_cost: float, min_cost: float, profile: UserProfileRequest, chosen: Dict[str, ProductRecommendation]) -> RecommendationResponse:
         shortfall = min_cost - profile.budget
         suggestions = [
-            f"Increase budget ceiling by ₹{int(shortfall + 20)} to unlock the complete {len(chosen)}-step clinical routine.",
+            f"Increase budget ceiling by ₹{int(shortfall)} to unlock the complete {len(chosen)}-step clinical routine.",
             f"Select a streamlined 2-step routine (Cleanser + Sunscreen) to stay strictly under ₹{int(profile.budget)}.",
             "Select items you already own (e.g. Cleanser or Moisturizer) in the questionnaire to reallocate funds toward targeted treatments."
         ]

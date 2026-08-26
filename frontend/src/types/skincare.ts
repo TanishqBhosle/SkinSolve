@@ -24,6 +24,7 @@ export interface ProductRecommendation {
   match_score: number;
   score_breakdown: ProductScoreBreakdown;
   why_recommended: string[];
+  why_not_reasons?: string[];
   usage_slot: 'AM' | 'PM' | 'BOTH';
 }
 
