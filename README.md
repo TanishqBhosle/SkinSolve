@@ -37,17 +37,18 @@ SkinSolve is a production-quality skincare recommendation and routine optimizati
 
 ## 📊 Empirical Evaluation Benchmark Results
 
-Tested on **35 diverse benchmark scenarios** against a curated **273-product catalog**:
+Tested on **42 diverse benchmark scenarios** against a curated **273-product catalog**:
 
 | Model Architecture | Precision@4 | Recall@4 | NDCG@4 | CSR (%) | Completeness (%) | Coverage (%) | Avg Latency (ms) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Popularity Baseline** | 0.436 | 0.233 | 0.969 | 0.0% | 5.7% | 1.5% | 3.41 ms |
-| **Content-Based Baseline** | 0.921 | 0.495 | 0.953 | 11.4% | 5.7% | 12.5% | 6.56 ms |
-| **Constraint-Aware Baseline** | 0.695 | 0.348 | 0.858 | 11.4% | 100.0% | 2.6% | 11.73 ms |
-| **SkinSolve Multi-Objective (Ours)** | **0.936** | **0.468** | **0.954** | **100.0%** | **100.0%** | **8.1%** | **200.24 ms** |
+| **Popularity Baseline** | 0.452 | 0.123 | 0.311 | 0.0% | 4.8% | 1.5% | 3.95 ms |
+| **Content-Based Baseline** | 0.917 | 0.250 | 0.823 | 14.3% | 4.8% | 13.9% | 8.14 ms |
+| **Constraint-Aware Baseline** | 0.710 | 0.178 | 0.463 | 0.0% | 100.0% | 2.6% | 14.68 ms |
+| **SkinSolve Multi-Objective (Ours)** | **0.929** | **0.232** | **0.836** | **100.0%** | **100.0%** | **8.8%** | **217.50 ms** |
 
 - **CSR (Constraint Satisfaction Rate)**: 100.0% adherence to all budget ceilings and hard exclusions.
 - **Routine Completeness**: 100.0% coverage of required 4-step AM/PM slots.
+- **NDCG@4**: 0.836 graded clinical suitability against the ideal theoretical ceiling.
 - **Latency**: Sub-250ms deterministic execution.
 
 ---

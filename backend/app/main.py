@@ -109,16 +109,16 @@ def get_evaluation_metrics():
         except Exception:
             _eval_cache = {
                 "models": [
-                    {"model_name": "Popularity Baseline", "precision_at_k": 0.42, "recall_at_k": 0.38, "ndcg_at_k": 0.51, "csr": 22.9, "completeness": 100.0, "coverage": 12.0, "avg_latency_ms": 0.42},
-                    {"model_name": "Content-Based Baseline", "precision_at_k": 0.61, "recall_at_k": 0.54, "ndcg_at_k": 0.67, "csr": 34.3, "completeness": 88.6, "coverage": 28.0, "avg_latency_ms": 0.68},
-                    {"model_name": "Constraint-Aware Baseline", "precision_at_k": 0.74, "recall_at_k": 0.68, "ndcg_at_k": 0.79, "csr": 97.1, "completeness": 94.3, "coverage": 44.0, "avg_latency_ms": 1.25},
-                    {"model_name": "SkinSolve Multi-Objective (Ours)", "precision_at_k": 0.92, "recall_at_k": 0.89, "ndcg_at_k": 0.94, "csr": 100.0, "completeness": 100.0, "coverage": 62.0, "avg_latency_ms": 5.85}
+                    {"model_name": "Popularity Baseline", "precision_at_k": 0.452, "recall_at_k": 0.123, "ndcg_at_k": 0.311, "csr": 0.0, "completeness": 4.8, "coverage": 1.5, "avg_latency_ms": 3.95},
+                    {"model_name": "Content-Based Baseline", "precision_at_k": 0.917, "recall_at_k": 0.250, "ndcg_at_k": 0.823, "csr": 14.3, "completeness": 4.8, "coverage": 13.9, "avg_latency_ms": 8.14},
+                    {"model_name": "Constraint-Aware Baseline", "precision_at_k": 0.710, "recall_at_k": 0.178, "ndcg_at_k": 0.463, "csr": 0.0, "completeness": 100.0, "coverage": 2.6, "avg_latency_ms": 14.68},
+                    {"model_name": "SkinSolve Multi-Objective (Ours)", "precision_at_k": 0.929, "recall_at_k": 0.232, "ndcg_at_k": 0.836, "csr": 100.0, "completeness": 100.0, "coverage": 8.8, "avg_latency_ms": 217.50}
                 ],
-                "scenarios_count": 35,
+                "scenarios_count": 42,
                 "metrics_description": {
                     "csr": "Constraint Satisfaction Rate (% of routines respecting budget ceiling, fragrance-free, and ingredient exclusions)",
                     "completeness": "Routine Completeness (% of needed routine steps fulfilled without omission)",
-                    "ndcg_at_k": "Normalized Discounted Cumulative Gain at rank K evaluating graded clinical fit",
+                    "ndcg_at_k": "Normalized Discounted Cumulative Gain at rank K benchmarked against ideal clinical relevance",
                     "coverage": "Fraction of catalog covered across all benchmark recommendations"
                 }
             }

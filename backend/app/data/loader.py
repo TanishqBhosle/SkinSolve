@@ -97,42 +97,76 @@ class DataLoader:
             df['description'] = df['description'].astype(str)
 
             # Clean list fields into native lists
-            df['skin_types_list'] = df['skin_types'].apply(_parse_list_field) if 'skin_types' in df.columns else [[] for _ in range(len(df))]
-            df['concerns_list'] = df['concerns'].apply(_parse_list_field) if 'concerns' in df.columns else [[] for _ in range(len(df))]
-            df['ingredients_list'] = df['ingredients'].apply(_parse_list_field) if 'ingredients' in df.columns else [[] for _ in range(len(df))]
+            if 'skin_types' in df.columns:
+                df['skin_types_list'] = df['skin_types'].apply(_parse_list_field)
+            else:
+                df['skin_types_list'] = [[] for _ in range(len(df))]
+
+            if 'concerns' in df.columns:
+                df['concerns_list'] = df['concerns'].apply(_parse_list_field)
+            else:
+                df['concerns_list'] = [[] for _ in range(len(df))]
+
+            if 'ingredients' in df.columns:
+                df['ingredients_list'] = df['ingredients'].apply(_parse_list_field)
+            else:
+                df['ingredients_list'] = [[] for _ in range(len(df))]
             
             # String representation for quick regex/contains search
-            df['ingredients_text'] = df['ingredients_list'].apply(lambda lst: " ".join(lst) if lst else "")
-            df['concerns_text'] = df['concerns_list'].apply(lambda lst: " ".join(lst) if lst else "")
-            df['skin_types_text'] = df['skin_types_list'].apply(lambda lst: " ".join(lst) if lst else "")
+            df['ingredients_text'] = pd.Series([" ".join(lst) if isinstance(lst, list) else "" for lst in df['ingredients_list']], index=df.index, dtype=str)
+            df['concerns_text'] = pd.Series([" ".join(lst) if isinstance(lst, list) else "" for lst in df['concerns_list']], index=df.index, dtype=str)
+            df['skin_types_text'] = pd.Series([" ".join(lst) if isinstance(lst, list) else "" for lst in df['skin_types_list']], index=df.index, dtype=str)
 
             # Boolean constraint flags
             if 'fragrance_free' in df.columns:
                 df['fragrance_free'] = df['fragrance_free'].astype(bool)
             else:
-                df['fragrance_free'] = ~df['ingredients_text'].str.contains(r'fragrance|parfum|perfume', case=False, na=False)
+                df['fragrance_free'] = [not bool(re.search(r'fragrance|parfum|perfume', t, re.IGNORECASE)) for t in df['ingredients_text']]
 
             if 'alcohol_free' in df.columns:
                 df['alcohol_free'] = df['alcohol_free'].astype(bool)
             else:
-                df['alcohol_free'] = ~df['ingredients_text'].str.contains(r'alcohol denat|sd alcohol', case=False, na=False)
+                df['alcohol_free'] = [not bool(re.search(r'alcohol denat|sd alcohol', t, re.IGNORECASE)) for t in df['ingredients_text']]
 
             if 'vegan' in df.columns:
                 df['vegan'] = df['vegan'].astype(bool)
             else:
                 # Default true for plant-based / clean formulations without animal derivatives
-                df['vegan'] = ~df['ingredients_text'].str.contains(r'beeswax|lanolin|carmine|collagen|honey', case=False, na=False)
+                df['vegan'] = [not bool(re.search(r'beeswax|lanolin|carmine|collagen|honey', t, re.IGNORECASE)) for t in df['ingredients_text']]
 
             if 'cruelty_free' in df.columns:
                 df['cruelty_free'] = df['cruelty_free'].astype(bool)
             else:
                 df['cruelty_free'] = True
 
-            # Evidence scoring
-            if 'evidence_tags' in df.columns:
-                df['evidence_score'] = pd.to_numeric(df['evidence_tags'], errors='coerce').fillna(0.85)
+            if os.path.exists(ingredients_path):
+                self.ingredients_df = pd.read_csv(ingredients_path)
             else:
-                df['evidence_score'] = 0.85
+                self.ingredients_df = pd.DataFrame()
+
+            if os.path.exists(evidence_path):
+                self.evidence_df = pd.read_csv(evidence_path)
+            else:
+                self.evidence_df = pd.DataFrame()
+
+            # Dynamic Evidence scoring based on clinical active tier & presence
+            gold_actives = [
+                'salicylic', 'niacinamide', 'ceramide', 'retinol', 'retinal', 'retinoate',
+                'tretinoin', 'ascorbic', 'azelaic', 'centella', 'cica', 'panthenol',
+                'hyaluronic', 'zinc pca', 'zinc oxide', 'tinosorb', 'bakuchiol', 'madecassoside'
+            ]
+            def compute_evidence(row):
+                ing = str(row.get('ingredients_text', '')).lower() + " " + str(row.get('name', '')).lower()
+                matches = sum(1 for act in gold_actives if act in ing)
+                if matches >= 3:
+                    return 0.95
+                elif matches == 2:
+                    return 0.90
+                elif matches == 1:
+                    return 0.82
+                return 0.72
+
+            df['evidence_score'] = df.apply(compute_evidence, axis=1)
 
             if 'image_url' not in df.columns:
                 df['image_url'] = ""
@@ -141,16 +175,6 @@ class DataLoader:
             self._fit_tfidf()
         else:
             self.products_df = pd.DataFrame()
-
-        if os.path.exists(ingredients_path):
-            self.ingredients_df = pd.read_csv(ingredients_path)
-        else:
-            self.ingredients_df = pd.DataFrame()
-
-        if os.path.exists(evidence_path):
-            self.evidence_df = pd.read_csv(evidence_path)
-        else:
-            self.evidence_df = pd.DataFrame()
 
     def _fit_tfidf(self):
         if self.products_df is not None and not self.products_df.empty:
@@ -171,16 +195,22 @@ class DataLoader:
     def get_products(self) -> pd.DataFrame:
         if self.products_df is None or self.products_df.empty:
             self.load_all()
+        if self.products_df is None:
+            return pd.DataFrame()
         return self.products_df.copy()
 
     def get_ingredients(self) -> pd.DataFrame:
         if self.ingredients_df is None:
             self.load_all()
+        if self.ingredients_df is None:
+            return pd.DataFrame()
         return self.ingredients_df.copy()
 
     def get_evidence(self) -> pd.DataFrame:
         if self.evidence_df is None:
             self.load_all()
+        if self.evidence_df is None:
+            return pd.DataFrame()
         return self.evidence_df.copy()
 
     def get_tfidf(self) -> Tuple[Optional[TfidfVectorizer], Any]:

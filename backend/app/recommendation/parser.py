@@ -80,8 +80,9 @@ def parse_skincare_problem(query: str) -> ProblemParseResponse:
 
     # 4. Budget Extraction
     budget: float = 1500.0 # Default benchmark baseline
+    q_normalized = re.sub(r'(?<=\d),(?=\d)', '', q)
     # Check "1.5k", "2k", "3k" notation
-    k_match = re.search(r'(?:budget|under|below|max|around|up to|₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*k\b', q)
+    k_match = re.search(r'(?:budget|under|below|max|around|up to|₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*k\b', q_normalized)
     if k_match:
         val = float(k_match.group(1)) * 1000.0
         if val >= 200:
@@ -92,7 +93,7 @@ def parse_skincare_problem(query: str) -> ProblemParseResponse:
             r'(\d{3,5})\s*(?:rs|inr|rupees|bucks|/-)?\s*(?:budget|max|only|limit)?'
         ]
         for pattern in budget_patterns:
-            match = re.search(pattern, q)
+            match = re.search(pattern, q_normalized)
             if match:
                 found_val = float(match.group(1))
                 if 200 <= found_val <= 20000:
@@ -100,7 +101,10 @@ def parse_skincare_problem(query: str) -> ProblemParseResponse:
                     break
 
     # 5. Preferences
-    fragrance_free = bool(re.search(r'(?:fragrance[\s-]free|no fragrance|without fragrance|avoid fragrance|unscented|perfume[\s-]free)', q))
+    fragrance_free = bool(re.search(
+        r'(?:fragrance[\s-]free|no fragrance|without fragrance|avoid fragrance|unscented|perfume[\s-]free|no perfume|without perfume|avoid perfume|don[\'t\s]+want perfume|zero perfume|free from perfume|fragrance\s+free)',
+        q
+    ))
     if sensitivity == "high":
         fragrance_free = True # Automatic default for high-sensitivity profiles
     vegan = bool(re.search(r'\b(?:vegan|100% vegan)\b', q))

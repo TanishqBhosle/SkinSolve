@@ -6,20 +6,26 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Any, Tuple
 
-# Ensure backend path is in sys.path
+# Ensure backend path and evaluation path are in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from app.data.loader import DataLoader
 from app.schemas.recommendation import UserProfileRequest
 from app.services.recommendation_service import RecommendationService
 from baselines import Baselines
 
-def compute_ndcg_at_k(relevance_scores: List[float], k: int = 4) -> float:
+def compute_ndcg_at_k(relevance_scores: List[float], k: int = 4, ideal_max_rel: float = 3.0) -> float:
+    """
+    Computes Normalized Discounted Cumulative Gain at Rank K.
+    IDCG is benchmarked against the gold-standard ideal relevance ceiling (rel = 3.0 for all K slots).
+    """
     scores = relevance_scores[:k]
     if not scores or sum(scores) == 0:
         return 0.0
     dcg = sum((2**rel - 1) / math.log2(idx + 2) for idx, rel in enumerate(scores))
-    ideal_scores = sorted(scores, reverse=True)
+    # Ideal DCG for K items at maximum possible graded clinical suitability
+    ideal_scores = [ideal_max_rel] * len(scores)
     idcg = sum((2**rel - 1) / math.log2(idx + 2) for idx, rel in enumerate(ideal_scores))
     return dcg / idcg if idcg > 0 else 0.0
 
@@ -104,6 +110,13 @@ def run_evaluation() -> Dict[str, Any]:
         needed_categories = [c for c in core_categories if c not in existing] or ["Treatment"]
         expected_status = str(row['expected_status'])
 
+        # Compute ground truth count of clinically relevant items in catalog for this profile
+        total_relevant_in_catalog = sum(
+            1 for p in products_df.to_dict(orient="records")
+            if evaluate_item_relevance(p, profile, catalog_lookup) >= 2.0
+        )
+        recall_denom = max(1, min(total_relevant_in_catalog, len(needed_categories) * 4))
+
         # -------------------------------------------------------------
         # 1. Popularity Baseline
         # -------------------------------------------------------------
@@ -123,7 +136,7 @@ def run_evaluation() -> Dict[str, Any]:
         
         pop_rels = [evaluate_item_relevance(p, profile, catalog_lookup) for p in pop_recs]
         metrics["Popularity Baseline"]["precision_k"].append(sum(1 for r in pop_rels if r >= 2.0) / max(1, len(pop_rels)))
-        metrics["Popularity Baseline"]["recall_k"].append(sum(1 for r in pop_rels if r >= 2.0) / max(1, len(needed_categories) * 2))
+        metrics["Popularity Baseline"]["recall_k"].append(sum(1 for r in pop_rels if r >= 2.0) / recall_denom)
         metrics["Popularity Baseline"]["ndcg_k"].append(compute_ndcg_at_k(pop_rels))
         for p in pop_recs:
             metrics["Popularity Baseline"]["unique_items"].add(p.get('product_id'))
@@ -147,7 +160,7 @@ def run_evaluation() -> Dict[str, Any]:
 
         cb_rels = [evaluate_item_relevance(p, profile, catalog_lookup) for p in cb_recs]
         metrics["Content-Based Baseline"]["precision_k"].append(sum(1 for r in cb_rels if r >= 2.0) / max(1, len(cb_rels)))
-        metrics["Content-Based Baseline"]["recall_k"].append(sum(1 for r in cb_rels if r >= 2.0) / max(1, len(needed_categories) * 2))
+        metrics["Content-Based Baseline"]["recall_k"].append(sum(1 for r in cb_rels if r >= 2.0) / recall_denom)
         metrics["Content-Based Baseline"]["ndcg_k"].append(compute_ndcg_at_k(cb_rels))
         for p in cb_recs:
             metrics["Content-Based Baseline"]["unique_items"].add(p.get('product_id'))
@@ -162,7 +175,7 @@ def run_evaluation() -> Dict[str, Any]:
 
         ca_cost = sum(p.get('price', 0) for p in ca_recs)
         ca_frag = all(p.get('fragrance_free', False) for p in ca_recs) if profile.fragrance_free else True
-        if (ca_cost <= profile.budget and ca_frag) or expected_status == "constraint_violation":
+        if (ca_cost <= profile.budget and ca_frag and len(ca_recs) > 0) or (len(ca_recs) == 0 and expected_status == "constraint_violation"):
             metrics["Constraint-Aware Baseline"]["csr_hits"] += 1
 
         ca_cats = set(p.get('category') for p in ca_recs)
@@ -171,7 +184,7 @@ def run_evaluation() -> Dict[str, Any]:
 
         ca_rels = [evaluate_item_relevance(p, profile, catalog_lookup) for p in ca_recs]
         metrics["Constraint-Aware Baseline"]["precision_k"].append(sum(1 for r in ca_rels if r >= 2.0) / max(1, len(ca_rels) or 1))
-        metrics["Constraint-Aware Baseline"]["recall_k"].append(sum(1 for r in ca_rels if r >= 2.0) / max(1, len(needed_categories) * 2))
+        metrics["Constraint-Aware Baseline"]["recall_k"].append(sum(1 for r in ca_rels if r >= 2.0) / recall_denom)
         metrics["Constraint-Aware Baseline"]["ndcg_k"].append(compute_ndcg_at_k(ca_rels))
         for p in ca_recs:
             metrics["Constraint-Aware Baseline"]["unique_items"].add(p.get('product_id'))
@@ -200,7 +213,7 @@ def run_evaluation() -> Dict[str, Any]:
         ss_prods = [p.model_dump() for p in ss_res.all_recommended_products]
         ss_rels = [evaluate_item_relevance(p, profile, catalog_lookup) for p in ss_prods]
         metrics["SkinSolve (Ours)"]["precision_k"].append(sum(1 for r in ss_rels if r >= 2.0) / max(1, len(ss_rels) or 1))
-        metrics["SkinSolve (Ours)"]["recall_k"].append(sum(1 for r in ss_rels if r >= 2.0) / max(1, len(needed_categories) * 2))
+        metrics["SkinSolve (Ours)"]["recall_k"].append(sum(1 for r in ss_rels if r >= 2.0) / recall_denom)
         metrics["SkinSolve (Ours)"]["ndcg_k"].append(compute_ndcg_at_k(ss_rels))
         for p in ss_prods:
             metrics["SkinSolve (Ours)"]["unique_items"].add(p.get('product_id'))

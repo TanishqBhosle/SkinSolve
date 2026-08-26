@@ -9,46 +9,46 @@ export const Evaluation: React.FC = () => {
   const defaultBenchmarkData = [
     {
       model_name: 'Popularity Baseline',
-      precision_at_k: 0.436,
-      recall_at_k: 0.233,
-      ndcg_at_k: 0.969,
+      precision_at_k: 0.452,
+      recall_at_k: 0.123,
+      ndcg_at_k: 0.311,
       csr: 0.0,
-      completeness: 5.7,
+      completeness: 4.8,
       coverage: 1.5,
-      avg_latency_ms: 3.55,
+      avg_latency_ms: 3.95,
       notes: 'Selects highest-rated items globally. Fails budget & fragrance constraints 100% of the time.'
     },
     {
       model_name: 'Content-Based Baseline',
-      precision_at_k: 0.921,
-      recall_at_k: 0.495,
-      ndcg_at_k: 0.953,
-      csr: 11.4,
-      completeness: 5.7,
-      coverage: 12.5,
-      avg_latency_ms: 6.65,
+      precision_at_k: 0.917,
+      recall_at_k: 0.250,
+      ndcg_at_k: 0.823,
+      csr: 14.3,
+      completeness: 4.8,
+      coverage: 13.9,
+      avg_latency_ms: 8.14,
       notes: 'Ranks on keyword overlap only. Ignores total routine budget and lacks category slotting.'
     },
     {
       model_name: 'Constraint-Aware Baseline',
-      precision_at_k: 0.695,
-      recall_at_k: 0.348,
-      ndcg_at_k: 0.858,
-      csr: 11.4,
+      precision_at_k: 0.710,
+      recall_at_k: 0.178,
+      ndcg_at_k: 0.463,
+      csr: 0.0,
       completeness: 100.0,
       coverage: 2.6,
-      avg_latency_ms: 12.53,
+      avg_latency_ms: 14.68,
       notes: 'Filters candidates by constraints, but greedy picking fails budget optimization.'
     },
     {
       model_name: 'SkinSolve Multi-Objective (Ours)',
-      precision_at_k: 0.936,
-      recall_at_k: 0.468,
-      ndcg_at_k: 0.954,
+      precision_at_k: 0.929,
+      recall_at_k: 0.232,
+      ndcg_at_k: 0.836,
       csr: 100.0,
       completeness: 100.0,
-      coverage: 8.1,
-      avg_latency_ms: 204.18,
+      coverage: 8.8,
+      avg_latency_ms: 217.50,
       notes: 'Deterministic combinatorial knapsack routine optimization. 100% CSR with active safety.'
     }
   ];
@@ -80,7 +80,7 @@ export const Evaluation: React.FC = () => {
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold font-serif text-charcoal-900">Recommendation System Benchmarks</h1>
         <p className="text-xs sm:text-sm text-charcoal-600 mt-2">
-          Rigorous offline empirical evaluation of SkinSolve vs standard baseline recommender algorithms across 35 realistic user personas.
+          Rigorous offline empirical evaluation of SkinSolve vs standard baseline recommender algorithms across 42 realistic user personas.
         </p>
       </div>
 
@@ -100,14 +100,14 @@ export const Evaluation: React.FC = () => {
 
         <div className="bg-surface-card p-5 rounded-2xl border border-surface-border text-center shadow-sm">
           <span className="text-[11px] font-bold text-charcoal-500 uppercase tracking-wide">Precision@K (K=4)</span>
-          <div className="text-3xl font-extrabold text-sage-700 font-serif mt-2">0.936</div>
-          <p className="text-[11px] text-charcoal-500 mt-1">Vs 0.436 for Popularity baseline</p>
+          <div className="text-3xl font-extrabold text-sage-700 font-serif mt-2">0.929</div>
+          <p className="text-[11px] text-charcoal-500 mt-1">Vs 0.452 for Popularity baseline</p>
         </div>
 
         <div className="bg-surface-card p-5 rounded-2xl border border-surface-border text-center shadow-sm">
           <span className="text-[11px] font-bold text-charcoal-500 uppercase tracking-wide">NDCG@K Fit</span>
-          <div className="text-3xl font-extrabold text-sage-700 font-serif mt-2">0.954</div>
-          <p className="text-[11px] text-charcoal-500 mt-1">Graded clinical suitability</p>
+          <div className="text-3xl font-extrabold text-sage-700 font-serif mt-2">0.836</div>
+          <p className="text-[11px] text-charcoal-500 mt-1">Vs 0.311 for Popularity baseline</p>
         </div>
       </div>
 
