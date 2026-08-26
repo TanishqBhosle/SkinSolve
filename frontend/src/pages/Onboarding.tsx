@@ -6,9 +6,10 @@ interface OnboardingProps {
   initialProfile?: Partial<UserProfileRequest>;
   onSubmit: (profile: UserProfileRequest) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit, onCancel }) => {
+export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit, onCancel, isSubmitting = false }) => {
   const [step, setStep] = useState(1);
   const [skinType, setSkinType] = useState<string>(initialProfile?.skin_type || 'combination');
   const [concerns, setConcerns] = useState<string[]>(initialProfile?.concerns || ['acne']);
@@ -19,6 +20,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
   const [crueltyFree, setCrueltyFree] = useState<boolean>(initialProfile?.cruelty_free ?? false);
   const [existingProducts, setExistingProducts] = useState<string[]>(initialProfile?.existing_products || []);
   const [excludedIngredients, setExcludedIngredients] = useState<string[]>(initialProfile?.excluded_ingredients || []);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const totalSteps = 4;
 
@@ -60,6 +62,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
     } else {
       setConcerns([...concerns, id]);
     }
+    setValidationError(null);
   };
 
   const toggleExisting = (cat: string) => {
@@ -71,9 +74,17 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
   };
 
   const handleNext = () => {
+    // Validate step 2: at least 1 concern required
+    if (step === 2 && concerns.length === 0) {
+      setValidationError('Please select at least one skin concern to continue.');
+      return;
+    }
+    setValidationError(null);
+
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
+      if (isSubmitting) return; // Prevent double-submission
       onSubmit({
         skin_type: skinType,
         concerns,
@@ -326,13 +337,21 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
           </div>
         )}
 
+        {/* Validation Error Message */}
+        {validationError && (
+          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-slide-up">
+            {validationError}
+          </div>
+        )}
+
         {/* Wizard Action Buttons */}
         <div className="mt-10 pt-6 border-t border-[#E5E0D7] flex items-center justify-between">
           {step > 1 ? (
             <button
               type="button"
-              onClick={() => setStep(step - 1)}
-              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full border border-[#E5E0D7] text-[#556864] text-sm font-semibold hover:bg-[#F4F8F5] transition-all cursor-pointer"
+              onClick={() => { setStep(step - 1); setValidationError(null); }}
+              disabled={isSubmitting}
+              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full border border-[#E5E0D7] text-[#556864] text-sm font-semibold hover:bg-[#F4F8F5] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -350,14 +369,31 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initialProfile, onSubmit
           <button
             type="button"
             onClick={handleNext}
-            className="inline-flex items-center space-x-2 px-7 py-3 rounded-full bg-[#1B3B2B] hover:bg-[#264E3A] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+            disabled={isSubmitting}
+            className={`inline-flex items-center space-x-2 px-7 py-3 rounded-full text-white text-sm font-bold shadow-md transition-all ${
+              isSubmitting
+                ? 'bg-[#264E3A] cursor-not-allowed opacity-75'
+                : 'bg-[#1B3B2B] hover:bg-[#264E3A] hover:shadow-lg cursor-pointer'
+            }`}
           >
-            <span>{step === totalSteps ? 'Generate Routine' : 'Next Step'}</span>
-            <ArrowRight className="w-4 h-4 text-[#E89D75]" />
+            <span>
+              {isSubmitting
+                ? 'Generating...'
+                : step === totalSteps
+                ? 'Generate Routine'
+                : 'Next Step'}
+            </span>
+            {isSubmitting ? (
+              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <ArrowRight className="w-4 h-4 text-[#E89D75]" />
+            )}
           </button>
         </div>
       </div>
     </div>
   );
 };
-

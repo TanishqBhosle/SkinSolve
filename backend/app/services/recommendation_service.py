@@ -18,5 +18,5 @@ class RecommendationService:
         candidates_df, rejections_log = ConstraintEngine.filter_candidates(products_df, profile)
 
         # 2. Routine Optimization & Multi-Objective Ranking
-        response = RoutineOptimizer.optimize_routine(candidates_df, profile)
+        response = RoutineOptimizer.optimize_routine(candidates_df, profile, rejections_log=rejections_log)
         return response

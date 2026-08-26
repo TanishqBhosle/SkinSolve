@@ -36,27 +36,44 @@ export const Results: React.FC<ResultsProps> = ({ data, userProfile, onModifyPro
   // Handle Failure State cleanly
   if (data.status === 'constraint_violation' && data.failure_resolution) {
     const res = data.failure_resolution;
+    const isNoProductsInRange = res.conflict_type === 'no_products_in_range';
+    const isBudgetShortfall = res.conflict_type === 'budget_shortfall';
+
     return (
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <div className="bg-white p-8 sm:p-10 rounded-3xl border border-red-200 shadow-xl">
-          <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-6 shadow-sm">
+        <div className={`bg-white p-8 sm:p-10 rounded-3xl border shadow-xl ${
+          isNoProductsInRange ? 'border-amber-200' : 'border-red-200'
+        }`}>
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm ${
+            isNoProductsInRange ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
+          }`}>
             <AlertTriangle className="w-7 h-7" />
           </div>
 
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-bold uppercase tracking-wider mb-3 border border-red-200">
-            <span>CONSTRAINT CONFLICT DIAGNOSED</span>
+          <div className={`inline-flex items-center space-x-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 border ${
+            isNoProductsInRange
+              ? 'bg-amber-50 text-amber-700 border-amber-200'
+              : 'bg-red-50 text-red-700 border-red-200'
+          }`}>
+            <span>{isNoProductsInRange ? 'NO PRODUCTS IN THIS PRICE RANGE' : isBudgetShortfall ? 'BUDGET TOO LOW FOR COMPLETE ROUTINE' : 'CONSTRAINT CONFLICT DIAGNOSED'}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#1C2826] mb-3">
-            We couldn't find a 100% compliant routine.
+            {isNoProductsInRange
+              ? `No products found under ₹${res.current_budget ?? userProfile.budget}`
+              : isBudgetShortfall
+              ? `Your ₹${res.current_budget ?? userProfile.budget} budget is below the minimum`
+              : "We couldn't find a 100% compliant routine."}
           </h2>
 
-          <p className="text-sm text-[#556864] mb-6 leading-relaxed bg-red-50/50 p-4 rounded-xl border border-red-100 font-sans">
+          <p className={`text-sm text-[#556864] mb-6 leading-relaxed p-4 rounded-xl border font-sans ${
+            isNoProductsInRange ? 'bg-amber-50/50 border-amber-100' : 'bg-red-50/50 border-red-100'
+          }`}>
             {res.reason}
           </p>
 
           {/* Budget Shortfall breakdown if applicable */}
-          {res.shortfall && res.shortfall > 0 && (
+          {isBudgetShortfall && res.shortfall && res.shortfall > 0 && (
             <div className="grid grid-cols-3 gap-4 p-5 rounded-2xl bg-[#FAF8F5] border border-[#E5E0D7] mb-8 text-center">
               <div>
                 <span className="text-[11px] text-[#556864] block uppercase font-bold tracking-wider">Your Budget</span>
@@ -73,8 +90,26 @@ export const Results: React.FC<ResultsProps> = ({ data, userProfile, onModifyPro
             </div>
           )}
 
+          {/* Closest Products Above Budget (if budget_shortfall with products) */}
+          {isBudgetShortfall && data.all_recommended_products.length > 0 && (
+            <div className="mb-8">
+              <span className="text-xs font-bold text-[#1C2826] uppercase tracking-wider block font-serif mb-3">Closest Available Products (Above Budget):</span>
+              <div className="space-y-2">
+                {data.all_recommended_products.map((p) => (
+                  <div key={p.product_id} className="flex items-center justify-between p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E5E0D7]">
+                    <div>
+                      <span className="text-sm font-bold text-[#1C2826]">{p.name}</span>
+                      <span className="text-xs text-[#556864] ml-2">{p.brand} • {p.category}</span>
+                    </div>
+                    <span className="text-sm font-bold text-[#1B3B2B] font-serif">₹{p.price}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3 mb-8">
-            <span className="text-xs font-bold text-[#1C2826] uppercase tracking-wider block font-serif">Actionable Recommendations:</span>
+            <span className="text-xs font-bold text-[#1C2826] uppercase tracking-wider block font-serif">What You Can Do:</span>
             {res.actionable_suggestions.map((sug, idx) => (
               <div key={idx} className="flex items-start space-x-3 text-sm text-[#2C3C39] bg-white p-3.5 rounded-xl border border-[#E5E0D7] shadow-xs">
                 <CheckCircle2 className="w-4 h-4 text-[#4A7C59] mt-0.5 shrink-0" />
@@ -89,7 +124,7 @@ export const Results: React.FC<ResultsProps> = ({ data, userProfile, onModifyPro
               className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-full bg-[#1B3B2B] hover:bg-[#264E3A] text-white text-sm font-bold transition-all shadow-md cursor-pointer"
             >
               <RefreshCw className="w-4 h-4 text-[#E89D75]" />
-              <span>Adjust Budget / Constraints</span>
+              <span>{isNoProductsInRange ? 'Adjust Budget' : 'Adjust Budget / Constraints'}</span>
             </button>
           </div>
         </div>
@@ -238,6 +273,19 @@ export const Results: React.FC<ResultsProps> = ({ data, userProfile, onModifyPro
             </button>
           </div>
 
+          {currentRoutine.length === 0 ? (
+            <div className="bg-white p-8 rounded-2xl border border-surface-border text-center">
+              <Moon className="w-8 h-8 text-charcoal-400 mx-auto mb-3" />
+              <p className="text-sm font-bold text-charcoal-700 mb-1">
+                No {routinePeriod === 'AM' ? 'morning' : 'evening'} routine steps
+              </p>
+              <p className="text-xs text-charcoal-500">
+                {routinePeriod === 'PM'
+                  ? 'All recommended products are for daytime use. Switch to AM to view your routine.'
+                  : 'All recommended products are for nighttime use. Switch to PM to view your routine.'}
+              </p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {currentRoutine.map((product, idx) => (
               <div
@@ -297,6 +345,7 @@ export const Results: React.FC<ResultsProps> = ({ data, userProfile, onModifyPro
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 

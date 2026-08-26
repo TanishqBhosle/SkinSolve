@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { Landing } from './pages/Landing';
 import { Onboarding } from './pages/Onboarding';
@@ -17,12 +17,34 @@ export function App() {
   const [parsedInitialData, setParsedInitialData] = useState<Partial<UserProfileRequest> | undefined>(undefined);
   const [recommendationResult, setRecommendationResult] = useState<RecommendationResponse | null>(null);
   const [loadingModalOpen, setLoadingModalOpen] = useState<boolean>(false);
-  const [pendingRecommendation, setPendingRecommendation] = useState<RecommendationResponse | null>(null);
-  const [pendingProfile, setPendingProfile] = useState<UserProfileRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Race-condition fix: track both API completion and modal animation separately
+  const [apiReady, setApiReady] = useState<boolean>(false);
+  const [apiResult, setApiResult] = useState<RecommendationResponse | null>(null);
+  const [apiProfile, setApiProfile] = useState<UserProfileRequest | null>(null);
+  const [modalDone, setModalDone] = useState<boolean>(false);
+
+  // Transition to results only when BOTH the API has responded AND the modal animation has completed
+  useEffect(() => {
+    if (apiReady && modalDone && apiResult && apiProfile) {
+      setRecommendationResult(apiResult);
+      setUserProfile(apiProfile);
+      setCurrentView('results');
+      // Reset flags
+      setApiReady(false);
+      setApiResult(null);
+      setApiProfile(null);
+      setModalDone(false);
+      setLoadingModalOpen(false);
+      setIsSubmitting(false);
+    }
+  }, [apiReady, modalDone, apiResult, apiProfile]);
 
   const handleStartQuiz = () => {
     setParsedInitialData(undefined);
+    setError(null);
     setCurrentView('onboarding');
   };
 
@@ -41,28 +63,36 @@ export function App() {
     setCurrentView('onboarding');
   };
 
-  const handleProfileSubmit = async (profile: UserProfileRequest) => {
+  const handleProfileSubmit = useCallback(async (profile: UserProfileRequest) => {
+    if (isSubmitting) return; // Prevent double-submission
+    setIsSubmitting(true);
     setUserProfile(profile);
     setError(null);
+    setApiReady(false);
+    setApiResult(null);
+    setApiProfile(null);
+    setModalDone(false);
+
     try {
       setLoadingModalOpen(true);
       const results = await generateRecommendations(profile);
-      setPendingRecommendation(results);
-      setPendingProfile(profile);
+      setApiResult(results);
+      setApiProfile(profile);
+      setApiReady(true);
     } catch (err: any) {
       setLoadingModalOpen(false);
+      setIsSubmitting(false);
+      setApiReady(false);
+      setModalDone(false);
       setError(err.message || 'An error occurred while generating recommendations.');
     }
-  };
+  }, [isSubmitting]);
 
-  const handleAnalysisComplete = () => {
-    setLoadingModalOpen(false);
-    if (pendingRecommendation && pendingProfile) {
-      setRecommendationResult(pendingRecommendation);
-      setUserProfile(pendingProfile);
-      setCurrentView('results');
-    }
-  };
+  const handleAnalysisComplete = useCallback(() => {
+    setModalDone(true);
+    // If API already finished, useEffect will handle the transition
+    // If API hasn't finished yet, the modal stays visible and useEffect will fire when API completes
+  }, []);
 
   const handleLoadSavedRoutine = (rec: RecommendationResponse, prof: UserProfileRequest) => {
     setRecommendationResult(rec);
@@ -117,6 +147,7 @@ export function App() {
                 initialProfile={parsedInitialData}
                 onSubmit={handleProfileSubmit}
                 onCancel={() => setCurrentView('landing')}
+                isSubmitting={isSubmitting}
               />
             )}
 

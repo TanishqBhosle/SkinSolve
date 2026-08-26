@@ -17,7 +17,7 @@ class RoutineOptimizer:
     CORE_CATEGORIES = ["Cleanser", "Treatment", "Moisturizer", "Sunscreen"]
 
     @classmethod
-    def optimize_routine(cls, candidate_df: pd.DataFrame, profile: UserProfileRequest) -> RecommendationResponse:
+    def optimize_routine(cls, candidate_df: pd.DataFrame, profile: UserProfileRequest, rejections_log: Optional[List[str]] = None) -> RecommendationResponse:
         # Determine needed categories based on user's existing products
         needed_categories = [cat for cat in cls.CORE_CATEGORIES if cat not in (profile.existing_products or [])]
         if not needed_categories:
@@ -28,6 +28,7 @@ class RoutineOptimizer:
 
         # 1. Rank products within each category
         category_pools: Dict[str, List[ProductRecommendation]] = {}
+        categories_with_no_affordable_products: List[str] = []
         for cat in needed_categories:
             cat_df = candidate_df[candidate_df['category'] == cat]
             scored_products = []
@@ -73,9 +74,16 @@ class RoutineOptimizer:
             scored_products.sort(key=lambda x: x.match_score, reverse=True)
             category_pools[cat] = scored_products
 
+            # Track categories with no products (after budget pre-filtering in constraints)
+            if not scored_products:
+                categories_with_no_affordable_products.append(cat)
+
         # 2. Check for empty candidate pools
         empty_cats = [cat for cat, prods in category_pools.items() if not prods]
         if empty_cats:
+            # If ALL categories are empty, it's a price range issue
+            if len(empty_cats) == len(needed_categories):
+                return cls._handle_no_products_in_range(profile, needed_categories)
             return cls._handle_empty_category_failure(empty_cats, profile)
 
         # 3. Combinatorial Selection for Highest Utility under Budget Constraint
@@ -83,9 +91,12 @@ class RoutineOptimizer:
 
         if best_combination is None:
             # Check minimum possible routine cost across all category pools
-            min_possible_cost = sum(min(p.price for p in category_pools[cat]) for cat in needed_categories)
+            non_empty_cats = [cat for cat in needed_categories if category_pools.get(cat)]
+            if not non_empty_cats:
+                return cls._handle_no_products_in_range(profile, needed_categories)
+            min_possible_cost = sum(min(p.price for p in category_pools[cat]) for cat in non_empty_cats)
             # Fallback to cheapest items for demonstration of shortfall
-            cheapest_routine = {cat: min(category_pools[cat], key=lambda x: x.price) for cat in needed_categories}
+            cheapest_routine = {cat: min(category_pools[cat], key=lambda x: x.price) for cat in non_empty_cats}
             return cls._handle_budget_shortfall(min_possible_cost, min_possible_cost, profile, cheapest_routine)
 
         chosen_routine = best_combination
@@ -111,6 +122,8 @@ class RoutineOptimizer:
         ]
         if conflict_notes:
             constraint_details.extend(conflict_notes)
+        if rejections_log:
+            constraint_details.extend(rejections_log)
 
         constraint_status = ConstraintStatus(
             budget_satisfied=True,
@@ -287,7 +300,7 @@ class RoutineOptimizer:
     def _handle_budget_shortfall(cls, current_cost: float, min_cost: float, profile: UserProfileRequest, chosen: Dict[str, ProductRecommendation]) -> RecommendationResponse:
         shortfall = min_cost - profile.budget
         suggestions = [
-            f"Increase budget ceiling by ₹{int(shortfall)} to unlock the complete {len(chosen)}-step clinical routine.",
+            f"Increase budget ceiling by ₹{int(shortfall)} to ₹{int(min_cost)} to unlock the complete {len(chosen)}-step clinical routine.",
             f"Select a streamlined 2-step routine (Cleanser + Sunscreen) to stay strictly under ₹{int(profile.budget)}.",
             "Select items you already own (e.g. Cleanser or Moisturizer) in the questionnaire to reallocate funds toward targeted treatments."
         ]
@@ -312,12 +325,61 @@ class RoutineOptimizer:
             alternatives=[],
             failure_resolution=FailureResolution(
                 failed=True,
-                reason=f"Your specified budget of ₹{int(profile.budget)} is below the minimum required (₹{int(min_cost)}) for all requested routine steps.",
+                reason=f"We couldn't find products under your ₹{int(profile.budget)} budget. The cheapest possible routine costs ₹{int(min_cost)}. Below are the closest options we found.",
                 conflict_type="budget_shortfall",
                 current_budget=profile.budget,
                 minimum_required_budget=min_cost,
                 shortfall=shortfall,
                 actionable_suggestions=suggestions
+            )
+        )
+
+    @classmethod
+    def _handle_no_products_in_range(cls, profile: UserProfileRequest, needed_categories: List[str]) -> RecommendationResponse:
+        """Handles the case where NO products in any category fall within the user's budget."""
+        min_cost = 0.0
+        try:
+            from ..data.loader import DataLoader
+            loader = DataLoader.get_instance()
+            catalog = loader.get_products()
+            for cat in needed_categories:
+                cat_prods = catalog[catalog['category'] == cat]
+                if not cat_prods.empty:
+                    min_cost += float(cat_prods['price'].min())
+        except Exception:
+            min_cost = 1000.0
+
+        shortfall = max(0.0, min_cost - profile.budget)
+
+        return RecommendationResponse(
+            status="constraint_violation",
+            overall_match_percentage=0,
+            total_routine_price=0.0,
+            constraint_status=ConstraintStatus(
+                budget_satisfied=False,
+                budget_limit=profile.budget,
+                total_cost=0.0,
+                fragrance_satisfied=True,
+                exclusions_satisfied=True,
+                no_active_conflicts=True,
+                details=[f"No products found within your ₹{int(profile.budget)} budget across categories: {', '.join(needed_categories)}."]
+            ),
+            morning_routine=[],
+            evening_routine=[],
+            all_recommended_products=[],
+            alternatives=[],
+            failure_resolution=FailureResolution(
+                failed=True,
+                reason=f"We couldn't find any products under your ₹{int(profile.budget)} budget. The minimum required budget for a complete {len(needed_categories)}-step routine is ₹{int(min_cost)} (shortfall of ₹{int(shortfall)}).",
+                conflict_type="no_products_in_range",
+                current_budget=profile.budget,
+                minimum_required_budget=min_cost,
+                shortfall=shortfall,
+                actionable_suggestions=[
+                    f"Try increasing your budget by ₹{int(shortfall)} to ₹{int(min_cost)} to unlock basic clinical formulations.",
+                    "Select items you already own in the questionnaire to reduce the number of products needed.",
+                    "Relax ingredient exclusion filters to access more affordable alternatives."
+                ]
             )
         )
 
@@ -334,7 +396,7 @@ class RoutineOptimizer:
                 fragrance_satisfied=True,
                 exclusions_satisfied=False,
                 no_active_conflicts=True,
-                details=[f"No compatible products found in categories: {', '.join(empty_cats)} matching strict exclusions."]
+                details=[f"No compatible products found in categories: {', '.join(empty_cats)} matching your filters."]
             ),
             morning_routine=[],
             evening_routine=[],
@@ -342,14 +404,15 @@ class RoutineOptimizer:
             alternatives=[],
             failure_resolution=FailureResolution(
                 failed=True,
-                reason=f"No products in the catalog satisfied your combined strict exclusions ({', '.join(profile.excluded_ingredients)}) for {', '.join(empty_cats)}.",
+                reason=f"No products in the catalog satisfied your combined filters (budget ₹{int(profile.budget)}{', exclusions: ' + ', '.join(profile.excluded_ingredients) if profile.excluded_ingredients else ''}) for {', '.join(empty_cats)}.",
                 conflict_type="empty_candidates",
                 current_budget=profile.budget,
                 minimum_required_budget=0,
                 shortfall=0,
                 actionable_suggestions=[
                     "Consider relaxing specific ingredient exclusions to explore mild hypoallergenic alternatives.",
-                    "Allow gentle fragrance-free alternatives in the filtered category."
+                    "Try increasing your budget to access a wider product range.",
+                    "Select items you already own to reduce the number of categories needed."
                 ]
             )
         )

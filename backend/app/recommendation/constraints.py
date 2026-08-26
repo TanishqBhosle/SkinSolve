@@ -9,6 +9,14 @@ class ConstraintEngine:
         rejections_log: List[str] = []
         filtered_df = df.copy()
 
+        # 0. Budget Pre-Filter: No single product should cost more than the total routine budget
+        if profile.budget > 0:
+            pre_count = len(filtered_df)
+            filtered_df = filtered_df[filtered_df['price'] <= profile.budget]
+            dropped = pre_count - len(filtered_df)
+            if dropped > 0:
+                rejections_log.append(f"Filtered out {dropped} product(s) priced above total budget ceiling of ₹{int(profile.budget)}.")
+
         # 1. Fragrance-Free Hard Constraint
         if profile.fragrance_free:
             pre_count = len(filtered_df)

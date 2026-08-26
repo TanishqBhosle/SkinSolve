@@ -6,16 +6,16 @@ interface AnalysisModalProps {
   onComplete: () => void;
 }
 
+const ANALYSIS_STEPS = [
+  { label: "Parsing dermal skin profile & target concerns", icon: Cpu },
+  { label: "Checking active ingredient contraindication rules", icon: ShieldCheck },
+  { label: "Filtering fragrance, alcohol & allergen hard constraints", icon: Filter },
+  { label: "Optimizing multi-objective utility routine across slots", icon: Layers },
+  { label: "Preparing evidence-backed explanations & trade-offs", icon: Sparkles }
+];
+
 export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
-
-  const steps = [
-    { label: "Parsing dermal skin profile & target concerns", icon: Cpu },
-    { label: "Checking active ingredient contraindication rules", icon: ShieldCheck },
-    { label: "Filtering fragrance, alcohol & allergen hard constraints", icon: Filter },
-    { label: "Optimizing multi-objective utility routine across slots", icon: Layers },
-    { label: "Preparing evidence-backed explanations & trade-offs", icon: Sparkles }
-  ];
 
   useEffect(() => {
     if (!isOpen) {
@@ -25,20 +25,20 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete
 
     const interval = setInterval(() => {
       setCurrentStep((prev) => {
-        if (prev < steps.length - 1) {
+        if (prev < ANALYSIS_STEPS.length - 1) {
           return prev + 1;
         } else {
           clearInterval(interval);
           setTimeout(() => {
             onComplete();
-          }, 600);
+          }, 400);
           return prev;
         }
       });
-    }, 700);
+    }, 600);
 
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [isOpen, onComplete]);
 
   if (!isOpen) return null;
 
@@ -58,7 +58,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onComplete
         </div>
 
         <div className="space-y-4 relative z-10">
-          {steps.map((step, idx) => {
+          {ANALYSIS_STEPS.map((step, idx) => {
             const Icon = step.icon;
             const isDone = idx < currentStep;
             const isCurrent = idx === currentStep;

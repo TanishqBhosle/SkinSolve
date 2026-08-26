@@ -112,9 +112,14 @@ class MultiObjectiveRanker:
         target_cat_budget = max(100.0, avg_category_budget)
         if price <= target_cat_budget:
             s_budget = 100.0
-        else:
+        elif price <= target_cat_budget * 1.5:
+            # Moderate overbudget: gentle penalty
             ratio = (price - target_cat_budget) / target_cat_budget
-            s_budget = max(15.0, 100.0 - (ratio * 65.0))
+            s_budget = max(40.0, 100.0 - (ratio * 85.0))
+        else:
+            # Significantly overbudget: harsh penalty
+            ratio = (price - target_cat_budget) / target_cat_budget
+            s_budget = max(5.0, 100.0 - (ratio * 85.0))
         s_budget = min(100.0, max(0.0, s_budget))
 
         # 6. Evidence Score (10%)

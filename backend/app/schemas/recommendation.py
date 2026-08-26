@@ -79,7 +79,7 @@ class ConstraintStatus(BaseModel):
 class FailureResolution(BaseModel):
     failed: bool
     reason: Optional[str] = None
-    conflict_type: Optional[str] = None # "budget_shortfall", "empty_candidates", "active_conflict"
+    conflict_type: Optional[str] = None # "budget_shortfall", "no_products_in_range", "empty_candidates", "active_conflict"
     current_budget: Optional[float] = None
     minimum_required_budget: Optional[float] = None
     shortfall: Optional[float] = None
