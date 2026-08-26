@@ -1,6 +1,15 @@
 import type { UserProfileRequest, ProblemParseResponse, RecommendationResponse } from '../types/skincare';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const getNormalizedBaseUrl = (): string => {
+  let envUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').trim();
+  envUrl = envUrl.replace(/\/+$/, '');
+  if (!envUrl.endsWith('/api/v1')) {
+    envUrl = `${envUrl}/api/v1`;
+  }
+  return envUrl;
+};
+
+const API_BASE_URL = getNormalizedBaseUrl();
 
 export async function parseNaturalLanguageProblem(query: string): Promise<ProblemParseResponse> {
   const response = await fetch(`${API_BASE_URL}/parse-problem`, {
