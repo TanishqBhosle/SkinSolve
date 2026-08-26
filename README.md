@@ -131,11 +131,4 @@ cd frontend
 npm run build
 ```
 
----
 
-<<<<<<< HEAD
-=======
-<div align="center">
-<i>Built with ❤️ for better, constraint-aware skincare routines.</i>
-</div>
->>>>>>> 8dbaa83 (Fix recommendation engine price filtering, double-click submission bug, and low-budget resolution messaging)
