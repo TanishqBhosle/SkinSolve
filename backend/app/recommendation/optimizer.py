@@ -3,6 +3,7 @@ import pandas as pd
 from typing import List, Dict, Any, Optional, Tuple
 from ..schemas.recommendation import (
     UserProfileRequest,
+    ProductScoreBreakdown,
     ProductRecommendation,
     AlternativeProduct,
     ConstraintStatus,

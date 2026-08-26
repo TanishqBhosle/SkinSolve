@@ -1,17 +1,36 @@
+import sys
+import os
+
+# Ensure backend directory is in sys.path for app module resolution
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import List, Dict, Any
 
-from app.schemas.recommendation import (
-    UserProfileRequest,
-    ProblemParseRequest,
-    ProblemParseResponse,
-    RecommendationResponse
-)
-from app.recommendation.parser import parse_skincare_problem
-from app.services.recommendation_service import RecommendationService
-from app.data.loader import DataLoader
+try:
+    from app.schemas.recommendation import (
+        UserProfileRequest,
+        ProblemParseRequest,
+        ProblemParseResponse,
+        RecommendationResponse
+    )
+    from app.recommendation.parser import parse_skincare_problem
+    from app.services.recommendation_service import RecommendationService
+    from app.data.loader import DataLoader
+except ModuleNotFoundError:
+    from .schemas.recommendation import (
+        UserProfileRequest,
+        ProblemParseRequest,
+        ProblemParseResponse,
+        RecommendationResponse
+    )
+    from .recommendation.parser import parse_skincare_problem
+    from .services.recommendation_service import RecommendationService
+    from .data.loader import DataLoader
 
 app = FastAPI(
     title="SkinSolve Intelligence API",
