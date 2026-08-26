@@ -11,7 +11,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0+-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com/)
 
 [Overview](#-overview) • [Key Features](#-key-architectural-features) • [Architecture](#-architecture--tech-stack) • [Evaluation](#-empirical-evaluation) • [Quick Start](#-quick-start) • [Testing](#-testing--verification)
-
+Deployed Link - https://skin-solve.vercel.app/
 </div>
 
 ---
@@ -132,6 +132,3 @@ npm run build
 
 ---
 
-<div align="center">
-<i>Built with ❤️ for better, constraint-aware skincare routines.</i>
-</div>
